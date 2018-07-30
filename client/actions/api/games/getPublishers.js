@@ -17,9 +17,9 @@ function Success(spec, my = {}) {
 	that.type = "Publishers/GetAll/Success";
 
 	that.performGameReducer = (state) => {
-		let { data: { rows: data } } = that.payload();
+		let { data: publishers } = that.payload();
 
-		return Object.assign({}, state, { publishers: data.map((datum) => datum.publisher) });
+		return Object.assign({}, state, { publishers });
 	};
 
 	return that;

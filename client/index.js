@@ -13,7 +13,7 @@ library.add(fontAwesome);
 
 export default class BoPlacement {
 	constructor({
-		restUrl = "/api",
+		restUrl = "/api/v1",
 		container
 	}) {
 		setUrl(restUrl);

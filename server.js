@@ -25,9 +25,9 @@ let router = express.Router();
 
 require("./server/api")(router);
 
-app.use("/api", router);
+app.use("/api/v1", router);
 
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
 	/*
 	 * this route will respond to all requests with the contents of your index
 	 * template. Doing this allows react-router to render the view in the app.

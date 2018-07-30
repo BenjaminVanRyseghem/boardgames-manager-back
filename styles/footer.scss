@@ -1,0 +1,20 @@
+@import "./variables";
+
+.footer {
+	border-top: 1px solid darken(#457C9E, 10%);
+	box-sizing: border-box;
+
+	background: #457C9E;
+	color: #D1DBF6;
+
+	.punchline {
+		text-align: center;
+		height: 16px;
+		padding: ($footer-height - 16px)/2 0;
+
+		.fa-heart {
+			color: #FF4D4D;
+			margin: 0 1ch;
+		}
+	}
+}

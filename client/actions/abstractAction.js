@@ -37,13 +37,22 @@ export default function AbstractAction(payload, my = {}) {
 	 */
 
 	/**
-	 * Double dispatch method for the [Account reducer]{@link GamesReducer}.
+	 * Double dispatch method for the [Game reducer]{@link GamesReducer}.
 	 * @function
 	 *
 	 * @param {Object} state - State object
 	 * @return {Object} new state
 	 */
 	that.performGameReducer = (state) => state;
+
+	/**
+	 * Double dispatch method for the [User reducer]{@link UsersReducer}.
+	 * @function
+	 *
+	 * @param {Object} state - State object
+	 * @return {Object} new state
+	 */
+	that.performUserReducer = (state) => state;
 
 	return that;
 }

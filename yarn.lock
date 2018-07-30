@@ -1313,6 +1313,10 @@ binary-extensions@^1.0.0:
   version "1.11.0"
   resolved "https://vespa.weezevent.net/binary-extensions/-/binary-extensions-1.11.0.tgz#46aa1751fb6a2f93ee5e689bb1087d4b14c6c205"
 
+bindings@^1.2.1:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.3.0.tgz#b346f6ecf6a95f5a815c5839fc7cdb22502f1ed7"
+
 bl@^1.2.1:
   version "1.2.2"
   resolved "https://vespa.weezevent.net/bl/-/bl-1.2.2.tgz#a160911717103c07410cef63ef51b397c025af9c"
@@ -4229,6 +4233,14 @@ hoek@2.x.x:
   version "2.16.3"
   resolved "https://vespa.weezevent.net/hoek/-/hoek-2.16.3.tgz#20bb7403d3cea398e91dc4710a8ff1b8274a25ed"
 
+hoek@5.x.x:
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/hoek/-/hoek-5.0.3.tgz#b71d40d943d0a95da01956b547f83c4a5b4a34ac"
+
+hoek@^4.2.1:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/hoek/-/hoek-4.2.1.tgz#9634502aa12c445dd5a7c5734b572bb8738aacbb"
+
 hoist-non-react-statics@^2.5.0:
   version "2.5.5"
   resolved "https://vespa.weezevent.net/hoist-non-react-statics/-/hoist-non-react-statics-2.5.5.tgz#c5903cf409c0dfd908f388e619d86b9c1174cb47"
@@ -4777,6 +4789,12 @@ isarray@^2.0.4:
   version "2.0.4"
   resolved "https://vespa.weezevent.net/isarray/-/isarray-2.0.4.tgz#38e7bcbb0f3ba1b7933c86ba1894ddfc3781bbb7"
 
+isemail@3.x.x:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/isemail/-/isemail-3.1.3.tgz#64f37fc113579ea12523165c3ebe3a71a56ce571"
+  dependencies:
+    punycode "2.x.x"
+
 isexe@^2.0.0:
   version "2.0.0"
   resolved "https://vespa.weezevent.net/isexe/-/isexe-2.0.0.tgz#e8fbf374dc556ff8947a10dcb0572d633f2cfa10"
@@ -5146,6 +5164,14 @@ jest-worker@^23.2.0:
   resolved "https://vespa.weezevent.net/jest-worker/-/jest-worker-23.2.0.tgz#faf706a8da36fae60eb26957257fa7b5d8ea02b9"
   dependencies:
     merge-stream "^1.0.1"
+
+joi@^13.1.2:
+  version "13.4.0"
+  resolved "https://registry.yarnpkg.com/joi/-/joi-13.4.0.tgz#afc359ee3d8bc5f9b9ba6cdc31b46d44af14cecc"
+  dependencies:
+    hoek "5.x.x"
+    isemail "3.x.x"
+    topo "3.x.x"
 
 jquery@^3.3.1:
   version "3.3.1"
@@ -5994,7 +6020,7 @@ mute-stream@0.0.7:
   version "0.0.7"
   resolved "https://vespa.weezevent.net/mute-stream/-/mute-stream-0.0.7.tgz#3075ce93bc21b8fab43e1bc4da7e8115ed1e7bab"
 
-nan@^2.10.0, nan@^2.3.2, nan@^2.9.2:
+nan@^2.10.0, nan@^2.3.2, nan@^2.3.5, nan@^2.9.2:
   version "2.10.0"
   resolved "https://vespa.weezevent.net/nan/-/nan-2.10.0.tgz#96d0cd610ebd58d4b4de9cc0c6828cda99c7548f"
 
@@ -6041,6 +6067,13 @@ next-tick@1:
 nice-try@^1.0.4:
   version "1.0.4"
   resolved "https://vespa.weezevent.net/nice-try/-/nice-try-1.0.4.tgz#d93962f6c52f2c1558c0fbda6d512819f1efe1c4"
+
+node-expat@^2.3.15:
+  version "2.3.16"
+  resolved "https://registry.yarnpkg.com/node-expat/-/node-expat-2.3.16.tgz#adb22174e1aaa5305996bd5b1aa6f2c8d5c0f239"
+  dependencies:
+    bindings "^1.2.1"
+    nan "^2.3.5"
 
 node-fetch@^1.0.1:
   version "1.7.3"
@@ -6788,13 +6821,13 @@ punycode@1.3.2:
   version "1.3.2"
   resolved "https://vespa.weezevent.net/punycode/-/punycode-1.3.2.tgz#9653a036fb7c1ee42342f2325cceefea3926c48d"
 
+punycode@2.x.x, punycode@^2.1.0:
+  version "2.1.1"
+  resolved "https://vespa.weezevent.net/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
+
 punycode@^1.3.2, punycode@^1.4.1:
   version "1.4.1"
   resolved "https://vespa.weezevent.net/punycode/-/punycode-1.4.1.tgz#c0d5a63b2718800ad8e1eb0fa5269c84dd41845e"
-
-punycode@^2.1.0:
-  version "2.1.1"
-  resolved "https://vespa.weezevent.net/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
 
 q@^1.1.2:
   version "1.5.1"
@@ -6895,6 +6928,10 @@ rc@^1.0.1, rc@^1.1.6, rc@^1.2.7:
     ini "~1.3.0"
     minimist "^1.2.0"
     strip-json-comments "~2.0.1"
+
+react-bootstrap-switch@^15.5.3:
+  version "15.5.3"
+  resolved "https://registry.yarnpkg.com/react-bootstrap-switch/-/react-bootstrap-switch-15.5.3.tgz#97287791d4ec0d1892d142542e7e5248002b1251"
 
 react-bootstrap@^0.32.1:
   version "0.32.1"
@@ -7301,7 +7338,7 @@ request-promise-native@^1.0.5:
     stealthy-require "^1.1.0"
     tough-cookie ">=2.3.3"
 
-request@2.87.0, request@^2.61.0, request@^2.83.0:
+request@2.87.0, request@^2.61.0, request@^2.83.0, request@^2.87.0:
   version "2.87.0"
   resolved "https://vespa.weezevent.net/request/-/request-2.87.0.tgz#32f00235cd08d482b4d0d68db93a829c0ed5756e"
   dependencies:
@@ -8339,6 +8376,12 @@ to-regex@^3.0.1, to-regex@^3.0.2:
     regex-not "^1.0.2"
     safe-regex "^1.1.0"
 
+topo@3.x.x:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/topo/-/topo-3.0.0.tgz#37e48c330efeac784538e0acd3e62ca5e231fe7a"
+  dependencies:
+    hoek "5.x.x"
+
 touch@^3.1.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/touch/-/touch-3.1.0.tgz#fe365f5f75ec9ed4e56825e0bb76d24ab74af83b"
@@ -8874,6 +8917,18 @@ xdg-basedir@^3.0.0:
 xml-name-validator@^3.0.0:
   version "3.0.0"
   resolved "https://vespa.weezevent.net/xml-name-validator/-/xml-name-validator-3.0.0.tgz#6ae73e06de4d8c6e47f9fb181f78d648ad457c6a"
+
+xml-parse@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/xml-parse/-/xml-parse-0.3.1.tgz#0faafdf73350e6ccf00ee8bc18fccf999e641985"
+
+xml2json@^0.11.2:
+  version "0.11.2"
+  resolved "https://registry.yarnpkg.com/xml2json/-/xml2json-0.11.2.tgz#70ddd234fd7818312cc58455cab8457b5bcc7c52"
+  dependencies:
+    hoek "^4.2.1"
+    joi "^13.1.2"
+    node-expat "^2.3.15"
 
 xmlcreate@^1.0.1:
   version "1.0.2"

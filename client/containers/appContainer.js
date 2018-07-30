@@ -1,6 +1,7 @@
 import { getAllGames, getAllPublishers } from "../actions/api/games";
 import App from "../components/app";
 import { connect } from "react-redux";
+import { getHasUsers } from "../actions/api/users";
 import { HashRouter } from "react-router-dom";
 import Loading from "../components/loading";
 import PropTypes from "prop-types";
@@ -8,15 +9,19 @@ import React from "react";
 
 class AppContainer extends React.Component {
 	componentDidMount() {
-		let { publishers } = this.props;
+		let { publishers, hasUsers } = this.props;
 
 		if (!publishers) {
 			this.props.getAllPublishers();
 		}
+
+		if (!hasUsers) {
+			this.props.getHasUsers();
+		}
 	}
 
 	render() {
-		if (!this.props.publishers) {
+		if (!this.props.publishers || this.props.hasUsers === null) {
 			return <Loading/>;
 		}
 
@@ -30,9 +35,9 @@ class AppContainer extends React.Component {
 
 AppContainer.propTypes = {
 	publishers: PropTypes.array,
-	undoHistory: PropTypes.array.isRequired,
-	getAllGames: PropTypes.func.isRequired,
-	getAllPublishers: PropTypes.func.isRequired
+	hasUsers: PropTypes.bool,
+	getAllPublishers: PropTypes.func.isRequired,
+	getHasUsers: PropTypes.func.isRequired
 };
 
 const mapStateToProps = ({
@@ -49,7 +54,8 @@ const mapStateToProps = ({
 
 const mapDispatchToProps = () => ({
 	getAllGames,
-	getAllPublishers
+	getAllPublishers,
+	getHasUsers
 });
 
 export default connect(
