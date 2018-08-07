@@ -1,18 +1,11 @@
 import { ControlLabel, FormControl, FormGroup, HelpBlock } from "react-bootstrap";
 import PropTypes from "prop-types";
 import React from "react";
+import { Form, Password } from "../lib/formBuilder";
 
 export default class RegisterFirstUser extends React.PureComponent {
-	constructor(props) {
-		super(props);
-
-		this.state = {
-			value: ""
-		};
-	}
-
 	getValidationState() {
-		const { length } = this.state.value;
+		const { length } = this.state.name;
 		if (length > 10) {
 			return "success";
 		} else if (length > 5) {
@@ -23,10 +16,6 @@ export default class RegisterFirstUser extends React.PureComponent {
 		return null;
 	}
 
-	handleChange(event) {
-		this.setState({ value: event.target.value });
-	}
-
 	render() {
 		return (
 			<div className="register-first-user">
@@ -35,22 +24,9 @@ export default class RegisterFirstUser extends React.PureComponent {
 					In order to function properly, a super user account is required, thus
 					you are invited to create one now using the following form.</p>
 
-				<form>
-					<FormGroup
-						controlId="formBasicText"
-						validationState={this.getValidationState()}
-					>
-						<ControlLabel>Working example with validation</ControlLabel>
-						<FormControl
-							type="text"
-							value={this.state.value}
-							placeholder="Enter text"
-							onChange={this.handleChange}
-						/>
-						<FormControl.Feedback/>
-						<HelpBlock>Validation is based on string length.</HelpBlock>
-					</FormGroup>
-				</form>
+				<Form onSubmit={() => { debugger; }}>
+					<Password withConfirmation/>
+				</Form>
 			</div>
 		);
 	}

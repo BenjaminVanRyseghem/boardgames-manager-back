@@ -9,8 +9,8 @@
 
 	.punchline {
 		text-align: center;
-		height: 16px;
-		padding: ($footer-height - 16px)/2 0;
+		height: $footer-height;
+		line-height: $footer-height;
 
 		.fa-heart {
 			color: #FF4D4D;

@@ -1,11 +1,14 @@
 @import "../node_modules/react-bootstrap-switch/dist/css/bootstrap3/react-bootstrap-switch.min";
 @import "../node_modules/bootstrap/scss/bootstrap";
 
+@import "./fonts";
+@import "./forms";
 @import "./range";
 @import "./switch";
 @import "./variables";
 
 @import "./register-first-user/main";
+
 
 .app {
 	position: fixed;
