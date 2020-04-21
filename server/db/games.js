@@ -1,3 +1,4 @@
+let users = require("./users");
 let queryable = require("queryable");
 
 let db = queryable.open("./games.json");
@@ -13,7 +14,11 @@ function numberOfPlayers(number) {
 	};
 }
 
+function showBorrowed() {
+}
+
 const actions = {
+	showBorrowed,
 	numberOfPlayers,
 	name: nameOfGame
 };
@@ -43,6 +48,10 @@ function buildQueryFrom(filters) {
 		Object.assign(query, actions[name](argument));
 	});
 
+	if (!+filters.showBorrowed) {
+		Object.assign(query, { borrowed: { $exists: false } });
+	}
+
 	return query;
 }
 
@@ -50,7 +59,15 @@ function getAllGames(rawFilters = {}) {
 	let filters = trimFilters(rawFilters);
 
 	let query = buildQueryFrom(filters);
-	return db.find(query);
+	let result = db.find(query);
+
+	result.rows.forEach((row) => {
+		if (row.borrowed) {
+			row.borrowed = users.findUser(row.borrowed).rows[0];
+		}
+	});
+
+	return result;
 }
 
 if (db.count() === 0) {
@@ -64,7 +81,6 @@ if (db.count() === 0) {
 			maxPlaytime: 180,
 			minAge: 13,
 			picture: "https://cf.geekdo-images.com/original/img/FwnbGGrU7av4j8kB11VZZRB58U4=/0x0/pic1196191.jpg",
-			lent: null,
 			box: 7,
 			publisher: "CMON Limited",
 			yearPublished: "2012",
@@ -80,13 +96,13 @@ if (db.count() === 0) {
 			maxPlaytime: 45,
 			minAge: 10,
 			picture: "https://cf.geekdo-images.com/original/img/wYvf6LExNhb3rflp_QYmCK_NhMc=/0x0/pic1528722.jpg",
-			lent: null,
+			borrowed: null,
 			box: 7,
 			publisher: "Gamewright",
 			yearPublished: "2013",
 			categories: ["Adventure", "Fantasy", "Science Fiction"],
 			mechanics: ["Action Point Allowance System", "Cooperative Play", "Grid Movement", "Modular Board", "Pick-up and Deliver", "Set Collection", "Variable Player Powers"]
-		},
+		}
 	]);
 
 	db.save();

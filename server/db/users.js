@@ -6,6 +6,23 @@ function hasUsers() {
 	return !!db.count();
 }
 
+function findUser(id) {
+	return db.find({ _id: id });
+}
+
 module.exports = {
-	hasUsers
+	hasUsers,
+	findUser
 };
+
+if (db.count() === 0) {
+	db.insert([
+		{
+			_id: 12,
+			lastName: "Sebastien",
+			firstName: "Julien"
+		}
+	]);
+
+	db.save();
+}

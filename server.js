@@ -1,5 +1,4 @@
 let express = require("express");
-let nunjucks = require("nunjucks");
 let bodyParser = require("body-parser");
 
 // initialise express
@@ -12,13 +11,8 @@ let app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// use nunjucks to process view templates in express
-nunjucks.configure("server/templates/views", {
-	express: app
-});
-
 // public assets are served before any dynamic requests
-app.use(express.static("dist"));
+app.use(express.static("public"));
 
 // eslint-disable-next-line new-cap
 let router = express.Router();
@@ -36,6 +30,6 @@ app.get("/", (req, res) => {
 });
 
 // start the server
-let server = app.listen(process.env.PORT || 3000, () => { // eslint-disable-line no-process-env
-	console.log("\nServer ready on port %d\n", server.address().port);
+let server = app.listen(process.env.PORT || 8080, () => { // eslint-disable-line no-process-env
+	console.log("\nServer ready on port %d\n", server.address().port); // eslint-disable-line no-console
 });
