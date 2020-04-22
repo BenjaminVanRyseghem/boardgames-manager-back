@@ -1,4 +1,8 @@
 let users = require("./users");
+let publishers = require("./publishers");
+let categories = require("./categories");
+let mechanics = require("./mechanics");
+let locations = require("./locations");
 let queryable = require("queryable");
 
 let db = queryable.open("./games.json");
@@ -14,10 +18,17 @@ function numberOfPlayers(number) {
 	};
 }
 
+function age(number) {
+	return {
+		minAge: { $lte: number }
+	};
+}
+
 function showBorrowed() {
 }
 
 const actions = {
+	age,
 	showBorrowed,
 	numberOfPlayers,
 	name: nameOfGame
@@ -33,6 +44,12 @@ function trimFilters(filters) {
 	});
 
 	return result;
+}
+
+function has({ foreignID }) {
+	return !!db.find({
+		foreignID
+	}).length;
 }
 
 function buildQueryFrom(filters) {
@@ -63,7 +80,23 @@ function getAllGames(rawFilters = {}) {
 
 	result.rows.forEach((row) => {
 		if (row.borrowed) {
-			row.borrowed = users.findUser(row.borrowed).rows[0];
+			row.borrowed = users.find(row.borrowed).rows[0];
+		}
+
+		if (row.location) {
+			row.location = locations.find(row.location).rows[0];
+		}
+
+		if (row.mechanics) {
+			row.mechanics = row.mechanics.map((mechanic) => mechanics.find(mechanic).rows[0]);
+		}
+
+		if (row.categories) {
+			row.categories = row.categories.map((category) => categories.find(category).rows[0]);
+		}
+
+		if (row.publishers) {
+			row.publishers = row.publishers.map((publisher) => publishers.find(publisher).rows[0]);
 		}
 	});
 
@@ -81,11 +114,11 @@ if (db.count() === 0) {
 			maxPlaytime: 180,
 			minAge: 13,
 			picture: "https://cf.geekdo-images.com/original/img/FwnbGGrU7av4j8kB11VZZRB58U4=/0x0/pic1196191.jpg",
-			box: 7,
-			publisher: "CMON Limited",
+			location: 7,
+			publishers: [108],
 			yearPublished: "2012",
-			categories: ["Horror", "Miniatures", "Zombies"],
-			mechanics: ["Action Point Allowance System", "Cooperative Play", "Dice Rolling", "Hand Management", "Modular Board", "Player Elimination", "Variable Player Powers"]
+			categories: [1022],
+			mechanics: [2023]
 		},
 		{
 			name: "Forbidden Desert",
@@ -97,22 +130,39 @@ if (db.count() === 0) {
 			minAge: 10,
 			picture: "https://cf.geekdo-images.com/original/img/wYvf6LExNhb3rflp_QYmCK_NhMc=/0x0/pic1528722.jpg",
 			borrowed: null,
-			box: 7,
-			publisher: "Gamewright",
+			location: 7,
+			publishers: [108],
 			yearPublished: "2013",
-			categories: ["Adventure", "Fantasy", "Science Fiction"],
-			mechanics: ["Action Point Allowance System", "Cooperative Play", "Grid Movement", "Modular Board", "Pick-up and Deliver", "Set Collection", "Variable Player Powers"]
+			categories: [1022],
+			mechanics: [2023]
 		}
 	]);
 
 	db.save();
 }
 
-function getAllPublishers() {
-	return db.distinct("publisher").rows.map((game) => game.publisher);
+function register(game) {
+	let data = { ...game };
+
+	data.categories = categories.addMultipleIfNotPresent(data.categories);
+	data.publishers = publishers.addMultipleIfNotPresent(data.publishers);
+	data.mechanics = mechanics.addMultipleIfNotPresent(data.mechanics);
+
+	if (has(game)) {
+		db.update({ foreignID: game.foreignID }, { $set: data }, {
+			multi: true,
+			upsert: true
+		});
+	} else {
+		db.insert(data);
+		db.save();
+	}
+
+	return data;
 }
 
 module.exports = {
+	has,
 	getAllGames,
-	getAllPublishers
+	register
 };

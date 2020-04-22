@@ -2,17 +2,21 @@ let queryable = require("queryable");
 
 let db = queryable.open("./users.json");
 
+const ADMIN = Symbol("admin");
+const USER = Symbol("user");
+const BORROWER = Symbol("borrower");
+
 function hasUsers() {
 	return !!db.count();
 }
 
-function findUser(id) {
+function find(id) {
 	return db.find({ _id: id });
 }
 
 module.exports = {
 	hasUsers,
-	findUser
+	find
 };
 
 if (db.count() === 0) {
@@ -20,7 +24,8 @@ if (db.count() === 0) {
 		{
 			_id: 12,
 			lastName: "Sebastien",
-			firstName: "Julien"
+			firstName: "Julien",
+			type: BORROWER
 		}
 	]);
 

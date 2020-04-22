@@ -11,11 +11,11 @@
   "files": [
     "public"
   ],
-  "main": "server.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "npx nodemon $NODE_DEBUG_OPTION server.js",
-    "lint": "npx eslint server server.js"
+    "start": "node src/index.js",
+    "dev": "NODE_ENV=development nodemon $NODE_DEBUG_OPTION src/index.js",
+    "lint": "npx eslint src"
   },
   "keywords": [],
   "devDependencies": {
@@ -24,8 +24,15 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
+    "accesscontrol": "^2.2.1",
     "body-parser": "^1.18.3",
+    "dotenv": "^8.2.0",
     "express": "^4.16.3",
+    "express-jwt": "^5.3.3",
+    "express-sanitize-escape": "^1.1.0",
+    "helmet": "^3.22.0",
+    "html-entities": "^1.3.1",
+    "morgan": "^1.10.0",
     "nodemon": "^1.18.3",
     "queryable": "^0.3.6",
     "request": "^2.87.0",

@@ -1,4 +1,6 @@
 node_modules
 coverage
 dist
-/games.json
+/*.json
+!package.json
+.env.local
