@@ -2,8 +2,6 @@ let queryable = require("queryable");
 
 let db = queryable.open("./users.json");
 
-const ADMIN = Symbol("admin");
-const USER = Symbol("user");
 const BORROWER = Symbol("borrower");
 
 function hasUsers() {

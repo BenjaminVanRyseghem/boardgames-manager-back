@@ -1,7 +1,10 @@
 let queryable = require("queryable");
 
 /**
- * TODO: Write jsdoc.
+ * Build simple and similar DB for meta information as `publishers`, `categories` or `mechanics`.
+ *
+ * @param {string} path - Path to the DB file
+ * @return {object} db and functions to export
  */
 module.exports = function dbBuilder(path) {
 	let db = queryable.open(path);
