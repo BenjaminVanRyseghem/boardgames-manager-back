@@ -12,7 +12,10 @@ router.route("/")
 	});
 
 router.route("/:gameId")
-	.get((req, res) => res.send(req.params.gameId))
+	.get((req, res) => {
+		res.setHeader("Content-Type", "application/json");
+		res.send(JSON.stringify(games.getGame(+req.params.gameId)));
+	})
 	.post((req, res) => {
 		request.get(`https://www.boardgamegeek.com/xmlapi2/thing?id=${req.params.gameId}`, (err, { statusCode }, body) => {
 			if (!err && statusCode === 200) {

@@ -22,7 +22,7 @@ module.exports = class BggAdapter {
 		let { item } = data.items;
 
 		let result = {
-			foreignID: item.id,
+			foreignId: item.id,
 			name: findPrimaryName(item.name),
 			description: item.description,
 			minPlayers: item.minplayers.value,
@@ -40,21 +40,21 @@ module.exports = class BggAdapter {
 		item.link.forEach((link) => {
 			if (link.type === "boardgamecategory") {
 				result.categories.push({
-					foreignID: link.id,
+					foreignId: link.id,
 					value: link.value
 				});
 			}
 
 			if (link.type === "boardgamemechanic") {
 				result.mechanics.push({
-					foreignID: link.id,
+					foreignId: link.id,
 					value: link.value
 				});
 			}
 
 			if (link.type === "boardgamepublisher") {
 				result.publishers.push({
-					foreignID: link.id,
+					foreignId: link.id,
 					value: link.value
 				});
 			}

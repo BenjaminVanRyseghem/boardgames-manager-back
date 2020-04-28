@@ -7,7 +7,7 @@ module.exports = mechanics;
 if (db.count() === 0) {
 	db.insert([
 		{
-			foreignID: 2023,
+			foreignId: 2023,
 			value: "Cooperative Game"
 		}
 	]);

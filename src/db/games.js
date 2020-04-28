@@ -1,6 +1,6 @@
 let users = require("./users");
 let publishers = require("./publishers");
-let categories = require("./categories");
+let categoriesDB = require("./categories");
 let mechanics = require("./mechanics");
 let locations = require("./locations");
 let queryable = require("queryable");
@@ -24,11 +24,57 @@ function age(number) {
 	};
 }
 
-function showBorrowed() {
+function showBorrowed() {}
+
+function categories(array) {
+	let allFilter = array.map((string) => +string)
+
+	return {
+		categories: { $all: allFilter}
+	};
+}
+
+function normalizeGame(game) {
+	if (game.borrowed) {
+		game.borrowed = users.find(game.borrowed).rows[0];
+	}
+
+	if (game.location) {
+		game.location = locations.find(game.location).rows[0];
+	}
+
+	if (game.mechanics) {
+		game.mechanics = game.mechanics.map((mechanic) => mechanics.find(mechanic).rows[0]);
+	}
+
+	if (game.categories) {
+		game.categories = game.categories.map((category) => categoriesDB.find(category).rows[0]);
+	}
+
+	if (game.publishers) {
+		game.publishers = game.publishers.map((publisher) => publishers.find(publisher).rows[0]);
+	}
+
+	return game;
+}
+
+function getGame(id) {
+	let result = db.find({ _id: id });
+	if (!result.length) {
+		return {
+			length: 0,
+			rows: []
+		};
+	}
+	return {
+		length: 1,
+		rows: [normalizeGame(result.rows[0])]
+	};
 }
 
 const actions = {
 	age,
+	categories,
 	showBorrowed,
 	numberOfPlayers,
 	name: nameOfGame
@@ -46,9 +92,9 @@ function trimFilters(filters) {
 	return result;
 }
 
-function has({ foreignID }) {
+function has({ foreignId }) {
 	return !!db.find({
-		foreignID
+		foreignId
 	}).length;
 }
 
@@ -80,27 +126,7 @@ function getAllGames(rawFilters = {}) {
 		.find(query)
 		.sort({ name: 1 });
 
-	result.rows.forEach((row) => {
-		if (row.borrowed) {
-			row.borrowed = users.find(row.borrowed).rows[0];
-		}
-
-		if (row.location) {
-			row.location = locations.find(row.location).rows[0];
-		}
-
-		if (row.mechanics) {
-			row.mechanics = row.mechanics.map((mechanic) => mechanics.find(mechanic).rows[0]);
-		}
-
-		if (row.categories) {
-			row.categories = row.categories.map((category) => categories.find(category).rows[0]);
-		}
-
-		if (row.publishers) {
-			row.publishers = row.publishers.map((publisher) => publishers.find(publisher).rows[0]);
-		}
-	});
+	result.rows = result.rows.map((row) => normalizeGame(row));
 
 	return result;
 }
@@ -108,12 +134,12 @@ function getAllGames(rawFilters = {}) {
 function register(game) {
 	let data = { ...game };
 
-	data.categories = categories.addMultipleIfNotPresent(data.categories);
+	data.categories = categoriesDB.addMultipleIfNotPresent(data.categories);
 	data.publishers = publishers.addMultipleIfNotPresent(data.publishers);
 	data.mechanics = mechanics.addMultipleIfNotPresent(data.mechanics);
 
 	if (has(game)) {
-		db.update({ foreignID: game.foreignID }, { $set: data }, {
+		db.update({ foreignId: game.foreignId }, { $set: data }, {
 			multi: true,
 			upsert: true
 		});
@@ -128,7 +154,8 @@ function register(game) {
 module.exports = {
 	has,
 	getAllGames,
-	register
+	register,
+	getGame
 };
 
 if (db.count() === 0) {

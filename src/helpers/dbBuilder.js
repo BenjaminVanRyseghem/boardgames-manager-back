@@ -9,14 +9,18 @@ let queryable = require("queryable");
 module.exports = function dbBuilder(path) {
 	let db = queryable.open(path);
 
-	function find(foreignID) {
+	function getAll() {
+		return db.find();
+	}
+
+	function find(foreignId) {
 		return db.find({
-			foreignID
+			foreignId
 		});
 	}
 
-	function has({ foreignID }) {
-		return !!find(foreignID).length;
+	function has({ foreignId }) {
+		return !!find(foreignId).length;
 	}
 
 	function addMultipleIfNotPresent(data = []) {
@@ -27,7 +31,7 @@ module.exports = function dbBuilder(path) {
 				db.insert(datum);
 			}
 
-			return datum.foreignID;
+			return datum.foreignId;
 		});
 
 		if (shouldSave) {
@@ -40,6 +44,7 @@ module.exports = function dbBuilder(path) {
 	return {
 		db,
 		exports: {
+			getAll,
 			has,
 			find,
 			addMultipleIfNotPresent

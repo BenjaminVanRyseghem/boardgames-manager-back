@@ -7,7 +7,7 @@ module.exports = categories;
 if (db.count() === 0) {
 	db.insert([
 		{
-			foreignID: 1022,
+			foreignId: 1022,
 			value: "Adventure"
 		}
 	]);

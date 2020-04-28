@@ -7,7 +7,7 @@ module.exports = publishers;
 if (db.count() === 0) {
 	db.insert([
 		{
-			foreignID: 108,
+			foreignId: 108,
 			value: "Gamewright"
 		}
 	]);
