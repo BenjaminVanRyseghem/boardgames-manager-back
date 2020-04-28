@@ -13,7 +13,7 @@
   ],
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "NODE_ENV=development node src/index.js",
     "dev": "NODE_ENV=development nodemon $NODE_DEBUG_OPTION src/index.js",
     "lint": "npx eslint src"
   },
@@ -32,6 +32,8 @@
     "express-sanitize-escape": "^1.1.0",
     "helmet": "^3.22.0",
     "html-entities": "^1.3.1",
+    "lodash-id": "^0.14.0",
+    "lowdb": "^1.0.0",
     "morgan": "^1.10.0",
     "nodemon": "^1.18.3",
     "queryable": "^0.3.6",

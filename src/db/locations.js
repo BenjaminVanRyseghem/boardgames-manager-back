@@ -1,22 +1,10 @@
-let queryable = require("queryable");
+const dbBuilder = require("../helpers/dbBuilder");
 
-let db = queryable.open("./locations.json");
+let { exports: locations } = dbBuilder("locations", [
+	{
+		id: "7",
+		name: "Boite 7"
+	}
+]);
 
-function find(id) {
-	return db.find({ _id: id });
-}
-
-module.exports = {
-	find
-};
-
-if (db.count() === 0) {
-	db.insert([
-		{
-			_id: 7,
-			name: "Boite 7"
-		}
-	]);
-
-	db.save();
-}
+module.exports = locations;

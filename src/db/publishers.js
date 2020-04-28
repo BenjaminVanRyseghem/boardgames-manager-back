@@ -1,16 +1,11 @@
 const dbBuilder = require("../helpers/dbBuilder");
 
-let { db, exports: publishers } = dbBuilder("./publishers.json");
+let { exports: publishers } = dbBuilder("publishers", [
+	{
+		id: "1",
+		foreignId: 108,
+		value: "Gamewright"
+	}
+]);
 
 module.exports = publishers;
-
-if (db.count() === 0) {
-	db.insert([
-		{
-			foreignId: 108,
-			value: "Gamewright"
-		}
-	]);
-
-	db.save();
-}

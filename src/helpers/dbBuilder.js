@@ -1,51 +1,72 @@
-let queryable = require("queryable");
+const low = require("lowdb");
+const FileSync = require("lowdb/adapters/FileAsync");
+const lodashId = require("lodash-id");
 
 /**
  * Build simple and similar DB for meta information as `publishers`, `categories` or `mechanics`.
  *
  * @param {string} path - Path to the DB file
+ * @param {object} initialValues - Defaults db entries
  * @return {object} db and functions to export
  */
-module.exports = function dbBuilder(path) {
-	let db = queryable.open(path);
+module.exports = function dbBuilder(path, initialValues) {
+	const adapter = new FileSync(`./${path}.json`);
+	let db = low(adapter).then((database) => {
+		database._.mixin(lodashId);
+		return database.get(path);
+	});
 
 	function getAll() {
-		return db.find();
+		return db
+			.then((data) => data.value());
 	}
 
-	function find(foreignId) {
-		return db.find({
-			foreignId
-		});
+	function find(id) {
+		return db
+			.then((data) => data.find({ id }))
+			.then((data) => data.value());
 	}
 
-	function has({ foreignId }) {
-		return !!find(foreignId).length;
+	function hasForeign({ foreignId }) {
+		return db
+			.then((data) => data.find({ foreignId }))
+			.then((data) => data.value());
 	}
 
 	function addMultipleIfNotPresent(data = []) {
-		let shouldSave = false;
-		let result = data.map((datum) => {
-			if (!has(datum)) {
-				shouldSave = true;
-				db.insert(datum);
-			}
+		let result = data.map((datum) => hasForeign(datum)
+			.then((matchingElement) => {
+				if (!matchingElement) {
+					return db
+						.then((database) => database.insert(datum))
+						.then((database) => database.write());
+				}
+				return matchingElement;
+			})
+			.then((matchingData) => matchingData.id));
 
-			return datum.foreignId;
-		});
-
-		if (shouldSave) {
-			db.save();
-		}
-
-		return result;
+		return Promise.all(result);
 	}
 
+	db
+		.then((data) => data.value())
+		.then((data) => {
+			if (!data) {
+				throw new Error("Empty DB");
+			}
+		})
+		.catch(() => {
+			low(adapter)
+				.then((database) => database.defaults({
+					[path]: initialValues
+				}))
+				.then((database) => database.write());
+		});
+
 	return {
-		db,
 		exports: {
 			getAll,
-			has,
+			hasForeign,
 			find,
 			addMultipleIfNotPresent
 		}

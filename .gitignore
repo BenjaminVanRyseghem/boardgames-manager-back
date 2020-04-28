@@ -3,4 +3,5 @@ coverage
 dist
 /*.json
 !package.json
+!nodemon.json
 .env.local

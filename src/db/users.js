@@ -1,15 +1,23 @@
-let queryable = require("queryable");
+const low = require("lowdb");
+const FileSync = require("lowdb/adapters/FileAsync");
+const lodashId = require("lodash-id");
 
-let db = queryable.open("./users.json");
+const adapter = new FileSync("./users.json");
+const db = low(adapter).then((database) => {
+	database._.mixin(lodashId);
+	return database.get("users");
+});
 
 const BORROWER = Symbol("borrower");
 
 function hasUsers() {
-	return !!db.count();
+	return db.then((users) => users.value());
 }
 
 function find(id) {
-	return db.find({ _id: id });
+	return db
+		.then((users) => users.find({ id }))
+		.then((users) => users.value());
 }
 
 module.exports = {
@@ -17,15 +25,26 @@ module.exports = {
 	find
 };
 
-if (db.count() === 0) {
-	db.insert([
-		{
-			_id: 12,
-			lastName: "Sebastien",
-			firstName: "Julien",
-			type: BORROWER
+db
+	.then((users) => users.value())
+	.then((users) => {
+		if (!users) {
+			throw new Error("Empty DB");
 		}
-	]);
+	})
+	.catch(() => {
+		low(adapter)
+			.then((database) => database.defaults({
+				users: [
+					{
+						id: "12",
+						lastName: "Sebastien",
+						firstName: "Julien",
+						type: BORROWER
 
-	db.save();
-}
+					}
+
+				]
+			}))
+			.then((database) => database.write());
+	});

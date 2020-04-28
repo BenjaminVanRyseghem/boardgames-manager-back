@@ -7,17 +7,14 @@ const router = new Router();
 let convertXmlToJson = (xml) => {
 	let raw = JSON.parse(xml2json.toJson(xml));
 	if (raw.items.total === "0" || !raw.items.item) {
-		return {
-			length: 0,
-			rows: []
-		};
+		return [];
 	}
 
 	if (raw.items.total === "1") {
 		raw.items.item = [raw.items.item];
 	}
 
-	let rows = raw.items.item.map((data) => {
+	return raw.items.item.map((data) => {
 		let thing = {
 			type: data.type,
 			name: data.name.value,
@@ -32,11 +29,6 @@ let convertXmlToJson = (xml) => {
 
 		return thing;
 	});
-
-	return {
-		length: rows.length,
-		rows
-	};
 };
 
 router.route("/bgg")
