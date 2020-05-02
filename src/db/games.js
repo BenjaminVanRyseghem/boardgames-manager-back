@@ -19,6 +19,7 @@ const actions = {
 	mechanics,
 	categories,
 	showBorrowed,
+	publishers,
 	numberOfPlayers,
 	name: nameOfGame
 };
@@ -37,36 +38,32 @@ function age(number) {
 
 function showBorrowed() {}
 
-function categories(stringOrArray) {
+function filterMeta(key, stringOrArray) {
 	let array = stringOrArray.constructor === Array ? stringOrArray : [stringOrArray];
 
 	return (datum) => {
-		if (!datum.categories || !datum.categories.length) {
+		if (!datum[key] || !datum[key].length) {
 			return false;
 		}
 
-		if (!datum.categories[0] || !datum.categories[0].id) {
-			return array.some((id) => datum.categories.includes(id));
+		if (!datum[key][0] || !datum[key][0].id) {
+			return array.some((id) => datum[key].includes(id));
 		}
 
-		return array.some((id) => datum.categories.find((category) => category.id === id));
+		return array.some((id) => datum[key].find((each) => each.id === id));
 	};
 }
 
+function categories(stringOrArray) {
+	return filterMeta("categories", stringOrArray);
+}
+
 function mechanics(stringOrArray) {
-	let array = stringOrArray.constructor === Array ? stringOrArray : [stringOrArray];
+	return filterMeta("mechanics", stringOrArray);
+}
 
-	return (datum) => {
-		if (!datum.mechanics || !datum.mechanics.length) {
-			return false;
-		}
-
-		if (!datum.mechanics[0] || !datum.mechanics[0].id) {
-			return array.some((id) => datum.mechanics.includes(id));
-		}
-
-		return array.some((id) => datum.mechanics.find((category) => category.id === id));
-	};
+function publishers(stringOrArray) {
+	return filterMeta("publishers", stringOrArray);
 }
 
 function normalizePart({ part, database, reset, add }) {
@@ -247,9 +244,9 @@ db
 						minPlaytime: 90,
 						maxPlaytime: 180,
 						minAge: 13,
-						borrowed: 12,
+						borrowed: "12",
 						picture: "https://cf.geekdo-images.com/original/img/FwnbGGrU7av4j8kB11VZZRB58U4=/0x0/pic1196191.jpg",
-						location: 7,
+						location: "7",
 						publishers: ["1"],
 						yearPublished: "2012",
 						categories: ["1"],
@@ -266,7 +263,7 @@ db
 						borrowed: null,
 						minAge: 10,
 						picture: "https://cf.geekdo-images.com/original/img/wYvf6LExNhb3rflp_QYmCK_NhMc=/0x0/pic1528722.jpg",
-						location: 7,
+						location: "7",
 						publishers: ["1"],
 						yearPublished: "2013",
 						categories: ["1"],
@@ -276,3 +273,78 @@ db
 			}))
 			.then((database) => database.write());
 	});
+
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      Games:
+ *        type: array
+ *        items:
+ *          $ref: '#/components/schemas/Game'
+ *      Game:
+ *        type: object
+ *        required:
+ *          - id
+ *          - foreignId
+ *          - name
+ *          - description
+ *          - minPlayers
+ *          - maxPlayers
+ *          - minPlaytime
+ *          - maxPlaytime
+ *          - minAge
+ *          - picture
+ *          - yearPublished
+ *        properties:
+ *          id:
+ *            type: string
+ *          foreignId:
+ *            type: string
+ *          name:
+ *            type: string
+ *          description:
+ *            type: string
+ *          minPlayers:
+ *            type: number
+ *          maxPlayers:
+ *            type: number
+ *          minPlaytime:
+ *            type: number
+ *          maxPlaytime:
+ *            type: number
+ *          borrowed:
+ *            type: string
+ *            nullable: true
+ *          minAge:
+ *            type: number
+ *          picture:
+ *            type: string
+ *          categories:
+ *            type: array
+ *            items:
+ *              type: string
+ *          publishers:
+ *            type: array
+ *            items:
+ *            $ref: '#/components/schemas/Publisher'
+ *          mechanics:
+ *            type: array
+ *            items:
+ *              type: string
+ *          yearPublished:
+ *            type: string
+ *        example:
+ *           id: "b50797f0-fa61-407f-9f45-48b5db6257ac"
+ *           name: "Zombicide"
+ *           description: "A game with zombies"
+ *           minPlayers: 2
+ *           maxPlayers: 6
+ *           minPlaytime: 45
+ *           maxPlaytime: 120
+ *           borrowed: null
+ *           minAge: 14
+ *           picture: "https://cf.geekdo-images.com/original/img/wYvf6LExNhb3rflp_QYmCK_NhMc=/0x0/pic1528722.jpg"
+ *           yearPublished: "2013"
+ *           publisher: [{id: "b50797f0-fa61-407f-9f45-48b5db6257ac", foreignId: "1024", value: "Asmodee"}]
+ */

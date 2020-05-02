@@ -5,6 +5,27 @@ const { Router } = require("express");
 const router = new Router();
 const request = require("request");
 
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: User management
+ */
+
+/**
+ * @swagger
+ * path:
+ *  /game:
+ *    get:
+ *      summary: Get all games matching the query
+ *      responses:
+ *        "200":
+ *          description: A list of games
+ *          content:
+ *            application/json:
+ *              schema:
+ *                $ref: '#/components/schemas/Games'
+ */
 router.route("/")
 	.get((req, res) => {
 		games.getAllGames(req.query)

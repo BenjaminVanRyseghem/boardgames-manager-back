@@ -1,3 +1,33 @@
+/**
+ * @swagger
+ *  components:
+ *    schemas:
+ *      User:
+ *        type: object
+ *        required:
+ *          - name
+ *          - email
+ *        properties:
+ *          name:
+ *            type: string
+ *          email:
+ *            type: string
+ *            format: email
+ *            description: Email for the user, needs to be unique.
+ *        example:
+ *           name: Alexander
+ *           email: fake@email.com
+ *      HasUsers:
+ *        type: object
+ *        required:
+ *          - hasUsers
+ *        properties:
+ *          hasUsers:
+ *            type: boolean
+ *        example:
+ *          hasUsers: true
+ */
+
 const low = require("lowdb");
 const FileSync = require("lowdb/adapters/FileAsync");
 const lodashId = require("lodash-id");
@@ -11,7 +41,7 @@ const db = low(adapter).then((database) => {
 const BORROWER = Symbol("borrower");
 
 function hasUsers() {
-	return db.then((users) => users.value());
+	return db.then((users) => !!users.value());
 }
 
 function find(id) {

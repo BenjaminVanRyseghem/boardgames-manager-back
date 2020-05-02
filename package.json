@@ -20,7 +20,8 @@
   "keywords": [],
   "devDependencies": {
     "eslint": "^5.1.0",
-    "eslint-config-benjamin-van-ryseghem": "^1.0.8"
+    "eslint-config-benjamin-van-ryseghem": "^1.0.8",
+    "swagger-jsdoc-sync-webpack-plugin": "^1.1.0"
   },
   "license": "GPL-3.0",
   "dependencies": {
@@ -38,6 +39,8 @@
     "nodemon": "^1.18.3",
     "queryable": "^0.3.6",
     "request": "^2.87.0",
+    "swagger-jsdoc": "^4.0.0",
+    "swagger-ui-express": "^4.1.4",
     "xml-parse": "^0.3.1",
     "xml2json": "^0.11.2"
   },
