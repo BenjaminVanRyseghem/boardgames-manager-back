@@ -38,10 +38,33 @@ router.route("/")
 router.route("/:gameId")
 	.get((req, res) => {
 		games.getGame(req.params.gameId)
-			.then((data) => {
-				res.setHeader("Content-Type", "application/json");
-				res.send(JSON.stringify(data));
+			.then((game) => {
+				if (game) {
+					res.setHeader("Content-Type", "application/json");
+					res.send(game);
+				} else {
+					res.send(JSON.stringify({
+						error: new Error("Game not found"),
+						code: 404
+					}));
+				}
 			});
+	})
+	.put((req, res) => {
+		games.update({
+			...req.body,
+			id: req.params.gameId
+		}).then((game) => {
+			if (game) {
+				res.setHeader("Content-Type", "application/json");
+				res.send(game);
+			} else {
+				res.send(JSON.stringify({
+					error: new Error("Game not found"),
+					code: 404
+				}));
+			}
+		});
 	})
 	.post((req, res) => {
 		request.get(`https://www.boardgamegeek.com/xmlapi2/thing?id=${req.params.gameId}`, (err, { statusCode }, body) => {

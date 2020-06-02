@@ -50,9 +50,15 @@ function find(id) {
 		.then((users) => users.value());
 }
 
+function getAll() {
+	return db
+		.then((data) => data.value());
+}
+
 module.exports = {
 	hasUsers,
-	find
+	find,
+	getAll
 };
 
 db
@@ -72,8 +78,14 @@ db
 						firstName: "Julien",
 						type: BORROWER
 
-					}
+					},
+					{
+						id: "27",
+						lastName: "Lagniez",
+						firstName: "Jonathan",
+						type: BORROWER
 
+					}
 				]
 			}))
 			.then((database) => database.write());

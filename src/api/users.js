@@ -35,5 +35,13 @@ router.route("/hasUsers")
 			});
 	});
 
+router.route("/")
+	.get((req, res) => {
+		users.getAll().then((data) => {
+			res.setHeader("Content-Type", "application/json");
+			res.send(JSON.stringify(data));
+		});
+	});
+
 module.exports = router;
 

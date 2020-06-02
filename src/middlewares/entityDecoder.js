@@ -3,6 +3,10 @@ const Entities = require("html-entities").AllHtmlEntities;
 const entities = new Entities();
 
 function decodeValue(value) {
+	if (value === null) {
+		return null;
+	}
+
 	if (typeof value === "string") {
 		return entities.decode(value);
 	}

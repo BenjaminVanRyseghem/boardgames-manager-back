@@ -149,6 +149,12 @@ function getGame(id) {
 		});
 }
 
+function hasById({ id }) {
+	return db
+		.then((data) => data.find({ id }))
+		.then((data) => !!data.value());
+}
+
 function has({ foreignId }) {
 	return db
 		.then((data) => data.find({ foreignId }))
@@ -191,36 +197,53 @@ function getAllGames(rawQueries = {}) {
 		.then((games) => Promise.all(games.map((row) => normalizeGame(row))));
 }
 
-function register(game) {
-	let data = {
-		...game,
-		borrowed: null
-	};
+function findAndUpdate(game, existFn, findOption) {
+	console.log("data", game);
+	let promises = [];
 
-	let promises = [
-		categoriesDB.addMultipleIfNotPresent(data.categories).then((newData) => (data.categories = newData)),
-		publishersDB.addMultipleIfNotPresent(data.publishers).then((newData) => (data.publishers = newData)),
-		mechanicsDB.addMultipleIfNotPresent(data.mechanics).then((newData) => (data.mechanics = newData))
-	];
+	game.categories &&
+	game.categories.length &&
+	categoriesDB.addMultipleIfNotPresent(game.categories).then((newData) => (game.categories = newData));
+
+	game.publishers &&
+	game.publishers.length &&
+	publishersDB.addMultipleIfNotPresent(game.publishers).then((newData) => (game.publishers = newData));
+
+	game.mechanics &&
+	game.mechanics.length &&
+	mechanicsDB.addMultipleIfNotPresent(game.mechanics).then((newData) => (game.mechanics = newData));
 
 	return Promise.all(promises)
-		.then(() => has(game))
+		.then(() => existFn(game))
 		.then((isPresent) => {
 			if (isPresent) {
 				return db
-					.then((database) => database.find({ foreignId: game.foreignId }))
-					.then((database) => database.assign(data));
+					.then((database) => database.find(findOption))
+					.then((database) => database.assign(game));
 			}
 			return db
-				.then((database) => database.insert(data));
+				.then((database) => database.insert(game));
 		})
-		.then((database) => database.write());
+		.then((database) => database.write())
+		.then((writtenData) => normalizeGame(writtenData));
+}
+
+function update(game) {
+	return findAndUpdate(game, hasById, { id: game.id });
+}
+
+function register(game) {
+	return findAndUpdate({
+		...game,
+		borrowed: null
+	}, has, { foreignId: game.foreignId });
 }
 
 module.exports = {
 	has,
 	getAllGames,
 	register,
+	update,
 	getGame
 };
 
