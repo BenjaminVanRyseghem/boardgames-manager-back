@@ -1,3 +1,4 @@
+/* eslint {"max-lines": [2, 400]} */
 const users = require("./users");
 const publishersDB = require("./publishers");
 const categoriesDB = require("./categories");
@@ -198,7 +199,6 @@ function getAllGames(rawQueries = {}) {
 }
 
 function findAndUpdate(game, existFn, findOption) {
-	console.log("data", game);
 	let promises = [];
 
 	game.categories &&
@@ -232,6 +232,12 @@ function update(game) {
 	return findAndUpdate(game, hasById, { id: game.id });
 }
 
+function deleteGame({ id }) {
+	return db
+		.then((database) => database.remove({ id }))
+		.then((database) => database.write());
+}
+
 function register(game) {
 	return findAndUpdate({
 		...game,
@@ -239,12 +245,29 @@ function register(game) {
 	}, has, { foreignId: game.foreignId });
 }
 
+function countInLocation(location) {
+	return db
+		.then((data) => data.filter((game) => game.location === location || game.location.id === location))
+		.then((data) => data.value())
+		.then((games) => games.length);
+}
+
+function findInLocation(location) {
+	return db
+		.then((data) => data.filter((game) => game.location === location || game.location.id === location))
+		.then((data) => data.value())
+		.then((games) => Promise.all(games.map((game) => normalizeGame(game))));
+}
+
 module.exports = {
 	has,
 	getAllGames,
 	register,
 	update,
-	getGame
+	deleteGame,
+	getGame,
+	findInLocation,
+	countInLocation
 };
 
 db

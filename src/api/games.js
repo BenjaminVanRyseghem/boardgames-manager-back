@@ -90,6 +90,14 @@ router.route("/:gameId")
 				}));
 			}
 		});
+	})
+	.delete((req, res) => {
+		games.deleteGame({
+			id: req.params.gameId
+		}).then((game) => {
+			res.setHeader("Content-Type", "application/json");
+			res.send(game);
+		});
 	});
 
 module.exports = router;

@@ -2,14 +2,18 @@ const low = require("lowdb");
 const FileSync = require("lowdb/adapters/FileAsync");
 const lodashId = require("lodash-id");
 
+const identity = (each) => Promise.resolve(each);
+
 /**
  * Build simple and similar DB for meta information as `publishers`, `categories` or `mechanics`.
  *
  * @param {string} path - Path to the DB file
  * @param {object} initialValues - Defaults db entries
+ * @param {object} options - Options object parameter
+ * @param {Function} options.normalize - function used to normalize objects
  * @return {object} db and functions to export
  */
-module.exports = function dbBuilder(path, initialValues) {
+module.exports = function dbBuilder(path, initialValues, { normalize = identity } = {}) {
 	const adapter = new FileSync(`./${path}.json`);
 	let db = low(adapter).then((database) => {
 		database._.mixin(lodashId);
@@ -18,23 +22,28 @@ module.exports = function dbBuilder(path, initialValues) {
 
 	function getAll() {
 		return db
-			.then((data) => data.value());
+			.then((data) => data.value())
+			.then((data) => {
+				let promises = data.map(normalize);
+				return Promise.all(promises);
+			});
 	}
 
 	function find(id) {
 		return db
 			.then((data) => data.find({ id }))
-			.then((data) => data.value());
+			.then((data) => data.value())
+			.then((data) => normalize(data));
 	}
 
-	function hasForeign({ foreignId }) {
+	function findWithForeignKey({ foreignId }) {
 		return db
 			.then((data) => data.find({ foreignId }))
 			.then((data) => data.value());
 	}
 
 	function addMultipleIfNotPresent(data = []) {
-		let result = data.map((datum) => hasForeign(datum)
+		let result = data.map((datum) => findWithForeignKey(datum)
 			.then((matchingElement) => {
 				if (!matchingElement) {
 					return db
@@ -66,7 +75,6 @@ module.exports = function dbBuilder(path, initialValues) {
 	return {
 		exports: {
 			getAll,
-			hasForeign,
 			find,
 			addMultipleIfNotPresent
 		}
