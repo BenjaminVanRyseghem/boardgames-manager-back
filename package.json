@@ -12,8 +12,9 @@
     "public"
   ],
   "main": "src/index.js",
+  "bin": "src/index.js",
   "scripts": {
-    "start": "NODE_ENV=development node src/index.js",
+    "start": "NODE_ENV=production node src/index.js",
     "dev": "NODE_ENV=development nodemon $NODE_DEBUG_OPTION src/index.js",
     "lint": "npx eslint src"
   },
