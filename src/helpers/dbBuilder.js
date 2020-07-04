@@ -33,6 +33,12 @@ module.exports = function dbBuilder(path, initialValues, { normalize = identity 
 		return db
 			.then((data) => data.find({ id }))
 			.then((data) => data.value())
+			.then((data) => {
+				if (!data) {
+					throw new Error("404");
+				}
+				return data;
+			})
 			.then((data) => normalize(data));
 	}
 
@@ -42,13 +48,23 @@ module.exports = function dbBuilder(path, initialValues, { normalize = identity 
 			.then((data) => data.value());
 	}
 
+	function insert(data) {
+		return db
+			.then((database) => database.insert(data))
+			.then((database) => database.write());
+	}
+
+	function remove({ id }) {
+		return db
+			.then((database) => database.remove({ id }))
+			.then((database) => database.write());
+	}
+
 	function addMultipleIfNotPresent(data = []) {
 		let result = data.map((datum) => findWithForeignKey(datum)
 			.then((matchingElement) => {
 				if (!matchingElement) {
-					return db
-						.then((database) => database.insert(datum))
-						.then((database) => database.write());
+					return insert(datum);
 				}
 				return matchingElement;
 			})
@@ -74,6 +90,8 @@ module.exports = function dbBuilder(path, initialValues, { normalize = identity 
 
 	return {
 		exports: {
+			insert,
+			remove,
 			getAll,
 			find,
 			addMultipleIfNotPresent

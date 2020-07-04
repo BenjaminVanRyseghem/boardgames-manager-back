@@ -14,7 +14,9 @@
   "main": "src/index.js",
   "bin": "src/index.js",
   "scripts": {
-    "start": "NODE_ENV=production node src/index.js",
+    "start": "node dist/app.js",
+    "build": "webpack --config build/webpack.prod.conf.js",
+    "dev2": "webpack --config build/webpack.dev.conf.js",
     "dev": "NODE_ENV=development nodemon $NODE_DEBUG_OPTION src/index.js",
     "lint": "npx eslint src"
   },
@@ -22,7 +24,9 @@
   "devDependencies": {
     "eslint": "^5.1.0",
     "eslint-config-benjamin-van-ryseghem": "^1.0.8",
-    "swagger-jsdoc-sync-webpack-plugin": "^1.1.0"
+    "swagger-jsdoc-sync-webpack-plugin": "^1.1.0",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
   },
   "license": "GPL-3.0",
   "dependencies": {

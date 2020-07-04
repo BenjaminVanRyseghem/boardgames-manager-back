@@ -10,6 +10,13 @@ router.route("/")
 			res.setHeader("Content-Type", "application/json");
 			res.send(JSON.stringify(data));
 		});
+	})
+	.post((req, res) => {
+		locations.insert({
+			name: req.body.name
+		}).then((location) => {
+			res.send(location);
+		});
 	});
 
 router.route("/:locationId")
@@ -28,7 +35,18 @@ router.route("/:locationId")
 
 				res.setHeader("Content-Type", "application/json");
 				res.send(JSON.stringify(data));
+			})
+			.catch(() => {
+				res.status(404).send("{}");
 			});
+	})
+	.delete((req, res) => {
+		locations.remove({
+			id: req.params.locationId
+		}).then((game) => {
+			res.setHeader("Content-Type", "application/json");
+			res.send(game);
+		});
 	});
 
 module.exports = router;
