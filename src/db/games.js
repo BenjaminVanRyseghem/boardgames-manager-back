@@ -1,4 +1,4 @@
-/* eslint {"max-lines": [2, 400]} */
+/* eslint {"max-lines": [2, 450]} */
 const users = require("./users");
 const publishersDB = require("./publishers");
 const categoriesDB = require("./categories");
@@ -247,14 +247,32 @@ function register(game) {
 
 function countInLocation(location) {
 	return db
-		.then((data) => data.filter((game) => game.location === location || game.location.id === location))
+		.then((data) => data.filter((game) => game.location &&
+			(game.location === location || game.location.id === location)))
 		.then((data) => data.value())
 		.then((games) => games.length);
 }
 
 function findInLocation(location) {
 	return db
-		.then((data) => data.filter((game) => game.location === location || game.location.id === location))
+		.then((data) => data.filter((game) => game.location &&
+			(game.location === location || game.location.id === location)))
+		.then((data) => data.value())
+		.then((games) => Promise.all(games.map((game) => normalizeGame(game))));
+}
+
+function countByUser({ id }) {
+	return db
+		.then((data) => data.filter((game) => game.borrowed &&
+				(game.borrowed === id || game.borrowed.id === id)))
+		.then((data) => data.value())
+		.then((games) => games.length);
+}
+
+function findByUser(user) {
+	return db
+		.then((data) => data.filter((game) => game.borrowed &&
+				(game.borrowed === user || game.borrowed.id === user)))
 		.then((data) => data.value())
 		.then((games) => Promise.all(games.map((game) => normalizeGame(game))));
 }
@@ -267,7 +285,9 @@ module.exports = {
 	deleteGame,
 	getGame,
 	findInLocation,
-	countInLocation
+	countInLocation,
+	countByUser,
+	findByUser
 };
 
 db

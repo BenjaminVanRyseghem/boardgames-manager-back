@@ -44,15 +44,32 @@ function hasUsers() {
 	return db.then((users) => !!users.value());
 }
 
+function normalize(data) {
+	let games = require("./games");
+	return games.countByUser(data)
+		.then((count) => {
+			data.numberOfBorrowedGames = count;
+			return data;
+		});
+}
+
 function find(id) {
 	return db
 		.then((users) => users.find({ id }))
-		.then((users) => users.value());
+		.then((users) => users.value())
+		.then((data) => {
+			if (!data) {
+				throw new Error("404");
+			}
+			return data;
+		})
+		.then((data) => normalize(data));
 }
 
 function getAll() {
 	return db
-		.then((data) => data.value());
+		.then((data) => data.value())
+		.then((data) => Promise.all(data.map((datum) => normalize(datum))));
 }
 
 module.exports = {
