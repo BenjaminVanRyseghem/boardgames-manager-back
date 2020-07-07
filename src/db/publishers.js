@@ -4,7 +4,7 @@ let { exports: publishers } = dbBuilder("publishers", [
 	{
 		id: "1",
 		foreignId: 108,
-		value: "Gamewright"
+		name: "Gamewright"
 	}
 ]);
 
@@ -17,18 +17,18 @@ let { exports: publishers } = dbBuilder("publishers", [
  *        required:
  *          - id
  *          - foreignId
- *          - value
+ *          - name
  *        properties:
  *          id:
  *            type: string
+ *          foreignId:
+ *            type: string
  *          name:
- *            foreignId: string
- *          value:
  *            type: string
  *        example:
  *           id: "b50797f0-fa61-407f-9f45-48b5db6257ac"
  *           foreignId: "b50797f0-fa61-407f-9f45-48b5db6257ac"
- *           value: "Asmodee"
+ *           name: "Asmodee"
  */
 
 module.exports = publishers;

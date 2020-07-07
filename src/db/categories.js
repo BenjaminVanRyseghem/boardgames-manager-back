@@ -4,7 +4,7 @@ let { exports: categories } = dbBuilder("categories", [
 	{
 		id: "1",
 		foreignId: 1022,
-		value: "Adventure"
+		name: "Adventure"
 	}
 ]);
 

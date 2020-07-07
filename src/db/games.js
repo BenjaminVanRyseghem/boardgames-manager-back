@@ -392,5 +392,5 @@ db
  *           minAge: 14
  *           picture: "https://cf.geekdo-images.com/original/img/wYvf6LExNhb3rflp_QYmCK_NhMc=/0x0/pic1528722.jpg"
  *           yearPublished: "2013"
- *           publisher: [{id: "b50797f0-fa61-407f-9f45-48b5db6257ac", foreignId: "1024", value: "Asmodee"}]
+ *           publisher: [{id: "b50797f0-fa61-407f-9f45-48b5db6257ac", foreignId: "1024", name: "Asmodee"}]
  */

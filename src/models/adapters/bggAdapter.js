@@ -41,21 +41,21 @@ module.exports = class BggAdapter {
 			if (link.type === "boardgamecategory") {
 				result.categories.push({
 					foreignId: link.id,
-					value: link.value
+					name: link.value
 				});
 			}
 
 			if (link.type === "boardgamemechanic") {
 				result.mechanics.push({
 					foreignId: link.id,
-					value: link.value
+					name: link.value
 				});
 			}
 
 			if (link.type === "boardgamepublisher") {
 				result.publishers.push({
 					foreignId: link.id,
-					value: link.value
+					name: link.value
 				});
 			}
 		});
