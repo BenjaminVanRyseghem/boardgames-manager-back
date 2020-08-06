@@ -1,4 +1,5 @@
 /* eslint-disable filenames/match-exported */
+const games = require("../db/games");
 const users = require("../db/users");
 const { Router } = require("express");
 const router = new Router();
@@ -41,6 +42,28 @@ router.route("/")
 			res.setHeader("Content-Type", "application/json");
 			res.send(JSON.stringify(data));
 		});
+	});
+
+router.route("/:id")
+	.get((req, res) => {
+		let promises = [
+			users.find(req.params.id),
+			games.findByUser(req.params.id)
+		];
+
+		Promise.all(promises)
+			.then(([user, gamesByUser]) => {
+				let data = {
+					...user,
+					borrowedGames: gamesByUser
+				};
+
+				res.setHeader("Content-Type", "application/json");
+				res.send(JSON.stringify(data));
+			})
+			.catch(() => {
+				res.status(404).send("{}");
+			});
 	});
 
 module.exports = router;

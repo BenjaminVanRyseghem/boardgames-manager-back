@@ -38,7 +38,7 @@ const db = low(adapter).then((database) => {
 	return database.get("users");
 });
 
-const BORROWER = Symbol("borrower");
+const BORROWER = "borrower";
 
 function hasUsers() {
 	return db.then((users) => !!users.value());
@@ -93,14 +93,14 @@ db
 						id: "12",
 						lastName: "Sebastien",
 						firstName: "Julien",
-						type: BORROWER
+						role: BORROWER
 
 					},
 					{
 						id: "27",
 						lastName: "Lagniez",
 						firstName: "Jonathan",
-						type: BORROWER
+						role: BORROWER
 
 					}
 				]

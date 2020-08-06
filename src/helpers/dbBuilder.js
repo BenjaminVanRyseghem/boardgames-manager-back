@@ -29,6 +29,14 @@ module.exports = function dbBuilder(path, initialValues, { normalize = identity 
 			});
 	}
 
+	function update(id, patch) {
+		return db
+			.then((data) => data.find({ id }))
+			.then((data) => data.assign(patch))
+			.then((data) => data.write())
+			.then((data) => normalize(data));
+	}
+
 	function find(id) {
 		return db
 			.then((data) => data.find({ id }))
@@ -91,6 +99,7 @@ module.exports = function dbBuilder(path, initialValues, { normalize = identity 
 	return {
 		exports: {
 			insert,
+			update,
 			remove,
 			getAll,
 			find,
