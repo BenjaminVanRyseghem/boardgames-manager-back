@@ -2,6 +2,11 @@
 const games = require("../db/games");
 const users = require("../db/users");
 const { Router } = require("express");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const config = require("../config").jwt;
+const AuthenticationError = require("../models/errors/authenticationError");
+
 const router = new Router();
 
 /**
@@ -42,6 +47,39 @@ router.route("/")
 			res.setHeader("Content-Type", "application/json");
 			res.send(JSON.stringify(data));
 		});
+	})
+	.post((req, res) => bcrypt.hash(req.body.password, config.saltRounds)
+		.then((hash) => users.insert({
+			id: req.body.email,
+			password: hash,
+			role: "user"
+		}))
+		.then(() => res.send(JSON.stringify({
+			id: req.body.email
+		}))));
+
+router.route("/login")
+	.post((req, res) => {
+		users.find(req.body.username)
+			.then((user) => {
+				if (!user || !bcrypt.compareSync(req.body.password, user.password)) { // eslint-disable-line no-sync
+					throw new AuthenticationError();
+				}
+
+				let userWithoutHash = { ...user };
+				delete userWithoutHash.password;
+
+				const token = jwt.sign({ id: user.id }, config.secret, { expiresIn: 12000 });
+
+				res.setHeader("Content-Type", "application/json");
+				res.send(JSON.stringify({
+					...userWithoutHash,
+					token
+				}));
+			})
+			.catch((error) => {
+				res.sendStatus(404);
+			});
 	});
 
 router.route("/:id")

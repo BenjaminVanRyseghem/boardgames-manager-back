@@ -72,10 +72,17 @@ function getAll() {
 		.then((data) => Promise.all(data.map((datum) => normalize(datum))));
 }
 
+function insert(data) {
+	return db
+		.then((database) => database.insert(data))
+		.then((database) => database.write());
+}
+
 module.exports = {
 	hasUsers,
 	find,
-	getAll
+	getAll,
+	insert
 };
 
 db

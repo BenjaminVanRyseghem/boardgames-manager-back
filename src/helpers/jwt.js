@@ -15,19 +15,29 @@ function jwt() {
 			secret,
 			isRevoked
 		}).unless({
-			path: ["/api/v1/user/login"]
+			path: ["/api/v1/user/login"],
+			custom: (req) => {
+				if (req.method !== "POST") {
+					return false;
+				}
+
+				if (req.originalUrl !== "/api/v1/user") {
+					return false;
+				}
+
+				return req.headers.host.startsWith("127.0.0.1");
+			}
 		})(...args);
 	};
 }
 
 function isRevoked(req, payload, done) {
-	const user = users.findUser(payload.sub);
-
-	// revoke token if user no longer exists
-	if (!user.length) {
-		done(null, true);
-		return;
-	}
-
-	done();
+	users.find(payload.id)
+		.then(() => {
+			done();
+		})
+		.catch((error) => {
+			console.error(error);
+			done(null, true);
+		});
 }
