@@ -1,11 +1,12 @@
 const xml2json = require("xml2json");
 
-function findPrimaryName(itemName) {
+function findName(itemName, type, search) {
 	if (itemName.value) {
 		return itemName.value;
 	}
 
-	return itemName.find((each) => each.type === "primary").value;
+	let nameRegexp = new RegExp(search, "i");
+	return itemName.find((each) => each.type === type && each.value.match(nameRegexp)).value;
 }
 
 /**
@@ -13,7 +14,7 @@ function findPrimaryName(itemName) {
  * @class
  */
 module.exports = class BggAdapter {
-	static import(xml) {
+	static import(xml, type, search) {
 		let data = xml2json.toJson(xml, { object: true });
 		if (!data || !data.items || !data.items.item) {
 			return null;
@@ -23,7 +24,7 @@ module.exports = class BggAdapter {
 
 		let result = {
 			foreignId: item.id,
-			name: findPrimaryName(item.name),
+			name: findName(item.name, type, search),
 			description: item.description,
 			minPlayers: item.minplayers.value,
 			maxPlayers: item.maxplayers.value,

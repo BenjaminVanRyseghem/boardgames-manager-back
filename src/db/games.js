@@ -240,6 +240,7 @@ function deleteGame({ id }) {
 
 function register(game) {
 	return findAndUpdate({
+		location: "1",
 		...game,
 		borrowed: null
 	}, has, { foreignId: game.foreignId });

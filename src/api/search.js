@@ -4,7 +4,7 @@ const xml2json = require("xml2json");
 const { Router } = require("express");
 const router = new Router();
 
-let convertXmlToJson = (xml) => {
+let convertXmlToJson = (xml, search) => {
 	let raw = JSON.parse(xml2json.toJson(xml));
 	if (raw.items.total === "0" || !raw.items.item) {
 		return [];
@@ -18,6 +18,8 @@ let convertXmlToJson = (xml) => {
 		let thing = {
 			type: data.type,
 			name: data.name.value,
+			nameType: data.name.type,
+			search,
 			id: data.id,
 			source: "boardgamegeek",
 			page: `https://www.boardgamegeek.com/${data.type}/${data.id}`
@@ -33,14 +35,14 @@ let convertXmlToJson = (xml) => {
 
 router.route("/bgg")
 	.get((req, res) => {
-		let uri = `https://www.boardgamegeek.com/xmlapi2/search?query=${req.query.name}&type=${req.query.type}`;
+		let uri = `https://www.boardgamegeek.com/xmlapi2/search?query=${encodeURI(req.query.name)}&type=${req.query.type}`;
 		if (req.query.exact === "true") {
 			uri += "&exact=1";
 		}
 		request.get(uri, (err, { statusCode }, body) => {
 			if (!err && statusCode === 200) {
 				res.setHeader("Content-Type", "application/json");
-				res.send(convertXmlToJson(body));
+				res.send(convertXmlToJson(body, req.query.name));
 			} else {
 				res.status(500);
 				res.setHeader("Content-Type", "application/json");
