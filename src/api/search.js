@@ -14,23 +14,31 @@ let convertXmlToJson = (xml, search) => {
 		raw.items.item = [raw.items.item];
 	}
 
-	return raw.items.item.map((data) => {
-		let thing = {
-			type: data.type,
-			name: data.name.value,
-			nameType: data.name.type,
-			search,
-			id: data.id,
-			source: "boardgamegeek",
-			page: `https://www.boardgamegeek.com/${data.type}/${data.id}`
-		};
+	let expansions = {};
 
-		if (data.yearpublished) {
-			thing.yearpublished = data.yearpublished.value;
-		}
+	return raw.items.item
+		.map((data) => {
+			let thing = {
+				type: data.type,
+				name: data.name.value,
+				nameType: data.name.type,
+				search,
+				id: data.id,
+				source: "boardgamegeek",
+				page: `https://www.boardgamegeek.com/${data.type}/${data.id}`
+			};
 
-		return thing;
-	});
+			if (data.type === "boardgameexpansion") {
+				expansions[data.id] = data;
+			}
+
+			if (data.yearpublished) {
+				thing.yearpublished = data.yearpublished.value;
+			}
+
+			return thing;
+		})
+		.filter((each) => each.source !== "boardgamegeek" || each.type !== "boardgame" || !expansions[each.id]);
 };
 
 router.route("/bgg")
