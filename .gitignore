@@ -1,7 +1,5 @@
 node_modules
 coverage
 dist
-/*.json
-!package.json
-!nodemon.json
+db
 .env.local

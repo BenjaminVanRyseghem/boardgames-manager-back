@@ -14,7 +14,7 @@ const identity = (each) => Promise.resolve(each);
  * @return {object} db and functions to export
  */
 module.exports = function dbBuilder(path, initialValues, { normalize = identity } = {}) {
-	const adapter = new FileSync(`./${path}.json`);
+	const adapter = new FileSync(`./db/${path}.json`);
 	let db = low(adapter).then((database) => {
 		database._.mixin(lodashId);
 		return database.get(path);

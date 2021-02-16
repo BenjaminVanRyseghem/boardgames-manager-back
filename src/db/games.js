@@ -7,7 +7,7 @@ const locations = require("./locations");
 
 const low = require("lowdb");
 const FileSync = require("lowdb/adapters/FileAsync");
-const adapter = new FileSync("./games.json");
+const adapter = new FileSync("./db/games.json");
 const lodashId = require("lodash-id");
 
 const db = low(adapter).then((database) => {

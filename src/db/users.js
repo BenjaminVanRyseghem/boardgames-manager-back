@@ -32,7 +32,7 @@ const low = require("lowdb");
 const FileSync = require("lowdb/adapters/FileAsync");
 const lodashId = require("lodash-id");
 
-const adapter = new FileSync("./users.json");
+const adapter = new FileSync("./db/users.json");
 const db = low(adapter).then((database) => {
 	database._.mixin(lodashId);
 	return database.get("users");
