@@ -1,4 +1,5 @@
 const xml2json = require("xml2json");
+const types = require("../types");
 
 function findName(itemName, type, search) {
 	if (itemName.value) {
@@ -7,6 +8,15 @@ function findName(itemName, type, search) {
 
 	let nameRegexp = new RegExp(search, "i");
 	return itemName.find((each) => each.type === type && each.value.match(nameRegexp)).value;
+}
+
+const itemTypes = {
+	boardgame: types.game,
+	boardgameexpansion: types.expansion
+};
+
+function convertType(type) {
+	return itemTypes[type] || types.game;
 }
 
 /**
@@ -35,8 +45,14 @@ module.exports = class BggAdapter {
 			yearPublished: item.yearpublished.value,
 			categories: [],
 			publishers: [],
-			mechanics: []
+			mechanics: [],
+			type: convertType(item.type)
 		};
+
+		if (result.type === types.expansion) {
+			let link = item.link.find((each) => each.type === "boardgameexpansion" && each.inbound === "true");
+			result.expand = link.id;
+		}
 
 		item.link.forEach((link) => {
 			if (link.type === "boardgamecategory") {

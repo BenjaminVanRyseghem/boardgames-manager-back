@@ -9,6 +9,8 @@ const low = require("lowdb");
 const FileSync = require("lowdb/adapters/FileAsync");
 const adapter = new FileSync("./db/games.json");
 const lodashId = require("lodash-id");
+const types = require("../models/types");
+const { expansion } = require("../models/types");
 
 const db = low(adapter).then((database) => {
 	database._.mixin(lodashId);
@@ -22,7 +24,8 @@ const actions = {
 	showBorrowed,
 	publishers,
 	numberOfPlayers,
-	name: nameOfGame
+	name: nameOfGame,
+	showExpansions
 };
 
 function nameOfGame(nameFragment) {
@@ -71,6 +74,16 @@ function publishers(stringOrArray) {
 	return filterMeta("publishers", stringOrArray);
 }
 
+function showExpansions(bool) {
+	return (datum) => {
+		if (!datum.type) {
+			return true; // let's assume it's a game
+		}
+
+		return bool === "1" || datum.type !== expansion;
+	};
+}
+
 function normalizePart({ part, database, reset, add }) {
 	let promises = [];
 
@@ -91,42 +104,57 @@ function normalizeGame(game) {
 		return Promise.resolve(undefined);
 	}
 
+	let result = Object.assign({}, game);
 	let promises = [];
 
-	if (game.borrowed && !game.borrowed.id) {
-		promises.push(users.find(game.borrowed).then((user) => {
-			game.borrowed = user;
+	if (result.borrowed && !result.borrowed.id) {
+		promises.push(users.find(result.borrowed).then((user) => {
+			result.borrowed = user;
 		}));
 	}
 
-	if (game.location && !game.location.id) {
-		promises.push(locations.find(game.location).then((user) => {
-			game.location = user;
+	if (result.location && !result.location.id) {
+		promises.push(locations.find(result.location).then((user) => {
+			result.location = user;
 		}));
+	}
+
+	if (result.expand && !result.expand.id) {
+		promises.push(db
+			.then((data) => data.find({ foreignId: result.expand }))
+			.then((basegame) => (result.expand = basegame)));
+	}
+
+	if (result.type === types.game) {
+		promises.push(db
+			.then((data) => data.filter({ expand: result.foreignId }).value())
+			.then((games) => {
+				result.expansions = games;
+			}));
 	}
 
 	promises.push(
 		...normalizePart({
-			part: game.mechanics,
+			part: result.mechanics,
 			database: mechanicsDB,
-			reset: () => (game.mechanics = []),
-			add: (datum) => game.mechanics.push(datum)
+			reset: () => (result.mechanics = []),
+			add: (datum) => result.mechanics.push(datum)
 		}),
 		...normalizePart({
-			part: game.categories,
+			part: result.categories,
 			database: categoriesDB,
-			reset: () => (game.categories = []),
-			add: (datum) => game.categories.push(datum)
+			reset: () => (result.categories = []),
+			add: (datum) => result.categories.push(datum)
 		}),
 		...normalizePart({
-			part: game.publishers,
+			part: result.publishers,
 			database: publishersDB,
-			reset: () => (game.publishers = []),
-			add: (datum) => game.publishers.push(datum)
+			reset: () => (result.publishers = []),
+			add: (datum) => result.publishers.push(datum)
 		})
 	);
 
-	return Promise.all(promises).then(() => game);
+	return Promise.all(promises).then(() => result);
 }
 
 function trimQueries(queries) {
