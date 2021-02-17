@@ -69,7 +69,7 @@ router.route("/login")
 				let userWithoutHash = { ...user };
 				delete userWithoutHash.password;
 
-				const token = jwt.sign({ id: user.id }, config.secret, { expiresIn: 12000 });
+				const token = jwt.sign({ id: user.id }, config.secret, { expiresIn: "7d" });
 
 				res.setHeader("Content-Type", "application/json");
 				res.send(JSON.stringify({
