@@ -34,6 +34,7 @@ module.exports = class BggAdapter {
 
 		let result = {
 			foreignId: item.id,
+			link: `https://www.boardgamegeek.com/boardgame/${item.id}`,
 			name: findName(item.name, type, search),
 			description: item.description,
 			minPlayers: item.minplayers.value,

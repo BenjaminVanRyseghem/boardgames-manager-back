@@ -107,6 +107,10 @@ function normalizeGame(game) {
 	let result = Object.assign({}, game);
 	let promises = [];
 
+	if (!result.link) {
+		result.link = `https://www.boardgamegeek.com/boardgame/${result.foreignId}`;
+	}
+
 	if (result.borrowed && !result.borrowed.id) {
 		promises.push(users.find(result.borrowed).then((user) => {
 			result.borrowed = user;
@@ -351,6 +355,8 @@ db
  *        required:
  *          - id
  *          - foreignId
+ *          - type
+ *          - link
  *          - name
  *          - description
  *          - minPlayers
@@ -371,6 +377,10 @@ db
  *            type: string
  *          minPlayers:
  *            type: number
+ *          type:
+ *            type: string
+ *          expand:
+ *            type: string
  *          maxPlayers:
  *            type: number
  *          minPlaytime:
@@ -388,6 +398,8 @@ db
  *            type: array
  *            items:
  *              type: string
+ *          link:
+ *            type: string
  *          publishers:
  *            type: array
  *            items:
@@ -400,6 +412,7 @@ db
  *            type: string
  *        example:
  *           id: "b50797f0-fa61-407f-9f45-48b5db6257ac"
+ *           type: "game"
  *           name: "Zombicide"
  *           description: "A game with zombies"
  *           minPlayers: 2
