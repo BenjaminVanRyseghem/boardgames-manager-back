@@ -3,3 +3,4 @@ coverage
 dist
 db
 .env.local
+registerUser.sh

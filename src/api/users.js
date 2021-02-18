@@ -77,9 +77,7 @@ router.route("/login")
 					token
 				}));
 			})
-			.catch((error) => {
-				res.sendStatus(404);
-			});
+			.catch(() => res.sendStatus(404));
 	});
 
 router.route("/:id")
@@ -102,6 +100,24 @@ router.route("/:id")
 			.catch(() => {
 				res.status(404).send("{}");
 			});
+	})
+	.put((req, res) => {
+		users.find(req.params.id)
+			.then((user) => {
+				if (!user || !bcrypt.compareSync(req.body.currentPassword, user.password)) { // eslint-disable-line no-sync
+					throw new AuthenticationError();
+				}
+
+				bcrypt.hash(req.body.newPassword, config.saltRounds)
+					.then((hash) => {
+						user.password = hash;
+						return users.update(req.params.id, { password: hash });
+					})
+					.then(() => {
+						res.status(200).send("{\"message\": \"OK\"}");
+					});
+			})
+			.catch(() => res.status(401).send("{}"));
 	});
 
 module.exports = router;

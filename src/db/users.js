@@ -78,11 +78,19 @@ function insert(data) {
 		.then((database) => database.write());
 }
 
+function update(id, slice) {
+	return db
+		.then((database) => database.find({ id }))
+		.then((database) => database.assign(slice))
+		.then((database) => database.write());
+}
+
 module.exports = {
 	hasUsers,
 	find,
 	getAll,
-	insert
+	insert,
+	update
 };
 
 db
@@ -97,18 +105,15 @@ db
 			.then((database) => database.defaults({
 				users: [
 					{
-						id: "12",
 						lastName: "Sebastien",
 						firstName: "Julien",
 						role: BORROWER
 
 					},
 					{
-						id: "27",
 						lastName: "Lagniez",
 						firstName: "Jonathan",
 						role: BORROWER
-
 					}
 				]
 			}))
