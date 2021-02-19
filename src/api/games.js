@@ -70,7 +70,7 @@ router.route("/:gameId")
 		request.get(`https://www.boardgamegeek.com/xmlapi2/thing?id=${req.params.gameId}`, (err, { statusCode }, body) => {
 			if (!err && statusCode === 200) {
 				games.register(
-					BggAdapter.import(body, req.body.nameType || "primary", req.body.search),
+					BggAdapter.import(body, req.body.nameType || "primary", req.body.name),
 					req.body.location
 				)
 					.then((game) => {

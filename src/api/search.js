@@ -4,7 +4,7 @@ const xml2json = require("xml2json");
 const { Router } = require("express");
 const router = new Router();
 
-let convertXmlToJson = (xml, search) => {
+let convertXmlToJson = (xml) => {
 	let raw = JSON.parse(xml2json.toJson(xml));
 	if (raw.items.total === "0" || !raw.items.item) {
 		return [];
@@ -22,7 +22,6 @@ let convertXmlToJson = (xml, search) => {
 				type: data.type,
 				name: data.name.value,
 				nameType: data.name.type,
-				search,
 				id: data.id,
 				source: "boardgamegeek",
 				page: `https://www.boardgamegeek.com/${data.type}/${data.id}`
@@ -50,7 +49,7 @@ router.route("/bgg")
 		request.get(uri, (err, { statusCode }, body) => {
 			if (!err && statusCode === 200) {
 				res.setHeader("Content-Type", "application/json");
-				res.send(convertXmlToJson(body, req.query.name));
+				res.send(convertXmlToJson(body));
 			} else {
 				res.status(500);
 				res.setHeader("Content-Type", "application/json");
