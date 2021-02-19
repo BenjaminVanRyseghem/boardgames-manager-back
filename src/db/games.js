@@ -234,6 +234,13 @@ function getAllGames(rawQueries = {}) {
 		.then((games) => Promise.all(games.map((row) => normalizeGame(row))));
 }
 
+function convertToRegularUser(id, email) {
+	return db
+		.then((database) => database.find({ borrowed: id }))
+		.then((database) => database.assign({ borrowed: email }))
+		.then((database) => database.write());
+}
+
 function findAndUpdate(game, existFn, findOption) {
 	let promises = [];
 
@@ -324,7 +331,8 @@ module.exports = {
 	findInLocation,
 	countInLocation,
 	countByUser,
-	findByUser
+	findByUser,
+	convertToRegularUser
 };
 
 db

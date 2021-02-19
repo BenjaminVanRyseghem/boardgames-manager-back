@@ -60,7 +60,7 @@ router.route("/")
 
 router.route("/login")
 	.post((req, res) => {
-		users.find(req.body.username)
+		users.login(req.body.username)
 			.then((user) => {
 				if (!user || !bcrypt.compareSync(req.body.password, user.password)) { // eslint-disable-line no-sync
 					throw new AuthenticationError();
@@ -80,27 +80,29 @@ router.route("/login")
 			.catch(() => res.sendStatus(404));
 	});
 
+function findUser(id, res) {
+	let promises = [
+		users.find(id),
+		games.findByUser(id)
+	];
+
+	return Promise.all(promises)
+		.then(([user, gamesByUser]) => {
+			let data = {
+				...user,
+				borrowedGames: gamesByUser
+			};
+
+			res.setHeader("Content-Type", "application/json");
+			res.send(JSON.stringify(data));
+		})
+		.catch(() => {
+			res.status(404).send("{}");
+		});
+}
+
 router.route("/:id")
-	.get((req, res) => {
-		let promises = [
-			users.find(req.params.id),
-			games.findByUser(req.params.id)
-		];
-
-		Promise.all(promises)
-			.then(([user, gamesByUser]) => {
-				let data = {
-					...user,
-					borrowedGames: gamesByUser
-				};
-
-				res.setHeader("Content-Type", "application/json");
-				res.send(JSON.stringify(data));
-			})
-			.catch(() => {
-				res.status(404).send("{}");
-			});
-	})
+	.get((req, res) => findUser(req.params.id, res))
 	.put((req, res) => {
 		users.find(req.params.id)
 			.then((user) => {
@@ -118,6 +120,16 @@ router.route("/:id")
 					});
 			})
 			.catch(() => res.status(401).send("{}"));
+	});
+
+router.route("/convertToRegularUser")
+	.post((req, res) => {
+		bcrypt.hash(req.body.password, config.saltRounds)
+			.then((password) => {
+				users.convertToRegularUser(req.body.id, req.body.email, password)
+					.then(() => findUser(req.body.email, res))
+					.catch(() => res.status(401).send("{}"));
+			});
 	});
 
 module.exports = router;

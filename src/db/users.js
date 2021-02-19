@@ -39,17 +39,20 @@ const db = low(adapter).then((database) => {
 });
 
 const BORROWER = "borrower";
+const USER = "user";
 
 function hasUsers() {
 	return db.then((users) => !!users.value());
 }
 
 function normalize(data) {
-	let games = require("./games");
-	return games.countByUser(data)
+	let result = Object.assign({}, data);
+	delete result.password;
+	let games = require("./games"); // eslint-disable-line global-require
+	return games.countByUser(result)
 		.then((count) => {
-			data.numberOfBorrowedGames = count;
-			return data;
+			result.numberOfBorrowedGames = count;
+			return result;
 		});
 }
 
@@ -64,6 +67,18 @@ function find(id) {
 			return data;
 		})
 		.then((data) => normalize(data));
+}
+
+function login(id) {
+	return db
+		.then((users) => users.find({ id }))
+		.then((users) => users.value())
+		.then((data) => {
+			if (!data) {
+				throw new Error("404");
+			}
+			return data;
+		});
 }
 
 function getAll() {
@@ -85,12 +100,29 @@ function update(id, slice) {
 		.then((database) => database.write());
 }
 
+function convertToRegularUser(id, email, password) {
+	if (!id || !email) {
+		throw new Error();
+	}
+	return db
+		.then((database) => database.find({ id }))
+		.then((database) => database.assign({
+			id: email,
+			password,
+			role: USER
+		}))
+		.then((database) => database.write())
+		.then(() => require("./games").convertToRegularUser(id, email)); // eslint-disable-line global-require
+}
+
 module.exports = {
 	hasUsers,
 	find,
 	getAll,
 	insert,
-	update
+	update,
+	convertToRegularUser,
+	login
 };
 
 db
