@@ -281,9 +281,9 @@ function deleteGame({ id }) {
 		.then((database) => database.write());
 }
 
-function register(game) {
+function register(game, location = "1") {
 	return findAndUpdate({
-		location: "1",
+		location,
 		...game,
 		borrowed: null
 	}, has, { foreignId: game.foreignId });
