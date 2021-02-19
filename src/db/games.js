@@ -37,7 +37,7 @@ function nameOfGame(nameFragment) {
 }
 
 function numberOfPlayers(number) {
-	return (datum) => datum.minPlayers <= number && datum.maxPlayers >= number;
+	return (datum) => datum.minPlayers <= +number && datum.maxPlayers >= +number;
 }
 
 function age(number) {
