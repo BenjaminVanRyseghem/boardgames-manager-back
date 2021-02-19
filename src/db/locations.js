@@ -7,7 +7,7 @@ let { exports: locations } = dbBuilder("locations", [
 	}
 ], {
 	normalize(each) {
-		const games = require("./games");
+		const games = require("./games"); // eslint-disable-line global-require
 
 		return games.countInLocation(each.id)
 			.then((count) => ({

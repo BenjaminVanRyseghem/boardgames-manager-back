@@ -36,8 +36,7 @@ function isRevoked(req, payload, done) {
 		.then(() => {
 			done();
 		})
-		.catch((error) => {
-			console.error(error);
+		.catch(() => {
 			done(null, true);
 		});
 }
