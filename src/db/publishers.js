@@ -1,12 +1,6 @@
 const dbBuilder = require("../helpers/dbBuilder");
 
-let { exports: publishers } = dbBuilder("publishers", [
-	{
-		id: "1",
-		foreignId: 108,
-		name: "Gamewright"
-	}
-]);
+let { exports: publishers } = dbBuilder("publishers", []);
 
 /**
  * @swagger
