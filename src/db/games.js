@@ -244,17 +244,20 @@ function convertToRegularUser(id, email) {
 function findAndUpdate(game, existFn, findOption) {
 	let promises = [];
 
-	game.categories &&
-	game.categories.length &&
-	categoriesDB.addMultipleIfNotPresent(game.categories).then((newData) => (game.categories = newData));
+	if (game.categories && game.categories.length) {
+		promises.push(categoriesDB.addMultipleIfNotPresent(game.categories)
+			.then((newData) => (game.categories = newData)));
+	}
 
-	game.publishers &&
-	game.publishers.length &&
-	publishersDB.addMultipleIfNotPresent(game.publishers).then((newData) => (game.publishers = newData));
+	if (game.publishers && game.publishers.length) {
+		promises.push(publishersDB.addMultipleIfNotPresent(game.publishers)
+			.then((newData) => (game.publishers = newData)));
+	}
 
-	game.mechanics &&
-	game.mechanics.length &&
-	mechanicsDB.addMultipleIfNotPresent(game.mechanics).then((newData) => (game.mechanics = newData));
+	if (game.mechanics && game.mechanics.length) {
+		promises.push(mechanicsDB.addMultipleIfNotPresent(game.mechanics)
+			.then((newData) => (game.mechanics = newData)));
+	}
 
 	return Promise.all(promises)
 		.then(() => existFn(game))
