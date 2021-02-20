@@ -6,8 +6,7 @@ function findName(itemName, type, search) {
 		return itemName.value;
 	}
 
-	let nameRegexp = new RegExp(search, "i");
-	return itemName.find((each) => each.type === type && each.value.match(nameRegexp)).value;
+	return itemName.find((each) => each.type === type && each.value === search).value;
 }
 
 const itemTypes = {
