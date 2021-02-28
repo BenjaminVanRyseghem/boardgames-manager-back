@@ -135,19 +135,7 @@ db
 	.catch(() => {
 		low(adapter)
 			.then((database) => database.defaults({
-				users: [
-					{
-						lastName: "Sebastien",
-						firstName: "Julien",
-						role: BORROWER
-
-					},
-					{
-						lastName: "Lagniez",
-						firstName: "Jonathan",
-						role: BORROWER
-					}
-				]
+				users: []
 			}))
 			.then((database) => database.write());
 	});
