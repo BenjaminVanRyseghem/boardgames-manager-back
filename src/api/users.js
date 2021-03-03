@@ -128,7 +128,7 @@ router.route("/:id/name")
 
 		users.find(req.params.id)
 			.then((user) => {
-				if (!user) { // eslint-disable-line no-sync
+				if (!user) {
 					throw new AuthenticationError();
 				}
 
