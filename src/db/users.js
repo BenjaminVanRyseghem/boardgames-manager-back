@@ -38,7 +38,7 @@ const db = low(adapter).then((database) => {
 	return database.get("users");
 });
 
-const BORROWER = "borrower";
+// const BORROWER = "borrower";
 const USER = "user";
 
 function hasUsers() {
