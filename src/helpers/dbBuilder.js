@@ -24,6 +24,10 @@ module.exports = function dbBuilder(path, initialValues, { normalize = identity 
 		return db
 			.then((data) => data.value())
 			.then((data) => {
+				if (!data) {
+					return Promise.resolve([]);
+				}
+
 				let promises = data.map(normalize);
 				return Promise.all(promises);
 			});
