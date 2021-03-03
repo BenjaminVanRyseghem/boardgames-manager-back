@@ -3,6 +3,7 @@ require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 
 let { redirectToHTTPS } = require("express-http-to-https");
 const bodyParser = require("body-parser");
+const compression = require("compression");
 const express = require("express");
 const helmet = require("helmet");
 const http = require("http");
@@ -24,6 +25,7 @@ app.use(redirectToHTTPS([
 	/127.0.0.1/,
 	/localhost:(\d{4})/
 ]));
+app.use(compression());
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());

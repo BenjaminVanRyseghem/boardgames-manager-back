@@ -33,6 +33,7 @@
     "accesscontrol": "^2.2.1",
     "bcrypt": "^5.0.0",
     "body-parser": "^1.18.3",
+    "compression": "^1.7.4",
     "dotenv": "^8.2.0",
     "express": "^4.16.3",
     "express-http-to-https": "^1.1.4",
