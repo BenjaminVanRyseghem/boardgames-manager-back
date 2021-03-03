@@ -106,6 +106,49 @@ router.route("/:id")
 	.put((req, res) => {
 		users.find(req.params.id)
 			.then((user) => {
+				if (!user) {
+					throw new AuthenticationError();
+				}
+
+				users.update(req.params.id, {
+					firstName: req.body.firstName || user.firstName,
+					lastName: req.body.lastName || user.lastName
+				})
+					.then(() => findUser(req.params.id, res));
+			})
+			.catch(() => res.status(401).send("{}"));
+	});
+
+router.route("/:id/name")
+	.put((req, res) => {
+		if (req.params.id !== req.user.id) {
+			res.status(401).send("{}");
+			return;
+		}
+
+		users.find(req.params.id)
+			.then((user) => {
+				if (!user) { // eslint-disable-line no-sync
+					throw new AuthenticationError();
+				}
+
+				users.update(req.params.id, {
+					firstName: req.body.firstName || user.firstName,
+					lastName: req.body.lastName || user.lastName
+				})
+					.then(() => findUser(req.params.id, res));
+			})
+			.catch(() => res.status(401).send("{}"));
+	});
+router.route("/:id/password")
+	.put((req, res) => {
+		if (req.params.id !== req.user.id) {
+			res.status(401).send("{}");
+			return;
+		}
+
+		users.login(req.params.id)
+			.then((user) => {
 				if (!user || !bcrypt.compareSync(req.body.currentPassword, user.password)) { // eslint-disable-line no-sync
 					throw new AuthenticationError();
 				}

@@ -20,7 +20,10 @@ const entityDecoder = require("./middlewares/entityDecoder");
 // initialise express
 let app = express();
 
-app.use(redirectToHTTPS([/127.0.0.1/]));
+app.use(redirectToHTTPS([
+	/127.0.0.1/,
+	/localhost:(\d{4})/
+]));
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
