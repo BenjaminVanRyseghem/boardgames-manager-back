@@ -14,7 +14,7 @@
   "main": "src/index.js",
   "bin": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "PORT=8080 node src/index.js",
     "dev": "NODE_ENV=development nodemon $NODE_DEBUG_OPTION src/index.js",
     "lint": "npx eslint src",
     "deploy": "rsync -aP -e \"ssh\" . chani:/Users/benjamin/boardgames-manager --exclude=.git --exclude=.DS_Store --exclude=.env --exclude=.idea  --exclude=public --exclude=node_modules  --exclude=/db",
