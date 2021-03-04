@@ -51,6 +51,11 @@ router.route("/:gameId")
 			});
 	})
 	.put((req, res) => {
+		if (req.user.role !== "admin") {
+			res.status(401).send("{}");
+			return;
+		}
+
 		games.update({
 			...req.body,
 			id: req.params.gameId
@@ -67,6 +72,11 @@ router.route("/:gameId")
 		});
 	})
 	.post((req, res) => {
+		if (req.user.role !== "admin") {
+			res.status(401).send("{}");
+			return;
+		}
+
 		request.get(`https://www.boardgamegeek.com/xmlapi2/thing?id=${req.params.gameId}`, (err, { statusCode }, body) => {
 			if (!err && statusCode === 200) {
 				games.register(

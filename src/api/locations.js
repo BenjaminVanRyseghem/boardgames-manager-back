@@ -41,6 +41,11 @@ router.route("/:locationId")
 			});
 	})
 	.put((req, res) => {
+		if (req.user.role !== "admin") {
+			res.status(401).send("{}");
+			return;
+		}
+
 		let promises = [
 			locations.update(req.params.locationId, req.body),
 			games.findInLocation(req.params.locationId)
@@ -61,12 +66,23 @@ router.route("/:locationId")
 			});
 	})
 	.delete((req, res) => {
-		locations.remove({
-			id: req.params.locationId
-		}).then((location) => {
-			res.setHeader("Content-Type", "application/json");
-			res.send(location);
-		});
+		if (req.user.role !== "admin") {
+			res.status(401).send("{}");
+			return;
+		}
+
+		games.findInLocation(req.params.locationId)
+			.then((allGames) => Promise.all(allGames.map((game) => games.update({
+				...game,
+				location: "1"
+			}))))
+			.then(() => locations.remove({
+				id: req.params.locationId
+			}))
+			.then((location) => {
+				res.setHeader("Content-Type", "application/json");
+				res.send(location);
+			});
 	});
 
 module.exports = router;

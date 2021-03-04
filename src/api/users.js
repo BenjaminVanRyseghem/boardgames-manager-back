@@ -48,15 +48,24 @@ router.route("/")
 			res.send(JSON.stringify(data));
 		});
 	})
-	.post((req, res) => bcrypt.hash(req.body.password, config.saltRounds)
-		.then((hash) => users.insert({
-			id: req.body.email,
-			password: hash,
-			role: "user"
-		}))
-		.then(() => res.send(JSON.stringify({
-			id: req.body.email
-		}))));
+	.post((req, res) => {
+		if (req.user.role !== "admin") {
+			res.status(401).send("{}");
+			return;
+		}
+
+		bcrypt.hash(req.body.password, config.saltRounds)
+			.then((hash) => users.insert({
+				id: req.body.email,
+				password: hash,
+				role: req.body.role || "user",
+				firstName: req.body.firstName,
+				lastName: req.body.lastName
+			}))
+			.then(() => res.send(JSON.stringify({
+				id: req.body.email
+			})));
+	});
 
 router.route("/login")
 	.post((req, res) => {
@@ -69,7 +78,10 @@ router.route("/login")
 				let userWithoutHash = { ...user };
 				delete userWithoutHash.password;
 
-				const token = jwt.sign({ id: user.id }, config.secret, { expiresIn: "7d" });
+				const token = jwt.sign({
+					id: user.id,
+					role: user.role
+				}, config.secret, { expiresIn: "7d" });
 
 				res.setHeader("Content-Type", "application/json");
 				res.send(JSON.stringify({
@@ -104,24 +116,7 @@ function findUser(id, res) {
 router.route("/:id")
 	.get((req, res) => findUser(req.params.id, res))
 	.put((req, res) => {
-		users.find(req.params.id)
-			.then((user) => {
-				if (!user) {
-					throw new AuthenticationError();
-				}
-
-				users.update(req.params.id, {
-					firstName: req.body.firstName || user.firstName,
-					lastName: req.body.lastName || user.lastName
-				})
-					.then(() => findUser(req.params.id, res));
-			})
-			.catch(() => res.status(401).send("{}"));
-	});
-
-router.route("/:id/name")
-	.put((req, res) => {
-		if (req.params.id !== req.user.id) {
+		if (req.user.role !== "admin") {
 			res.status(401).send("{}");
 			return;
 		}
@@ -140,11 +135,31 @@ router.route("/:id/name")
 			})
 			.catch(() => res.status(401).send("{}"));
 	});
+
+router.route("/:id/name")
+	.put((req, res) => {
+		if (req.user.role !== "admin" || req.params.id !== req.user.id) {
+			res.status(401).send("{}");
+		}
+
+		users.find(req.params.id)
+			.then((user) => {
+				if (!user) {
+					throw new AuthenticationError();
+				}
+
+				users.update(req.params.id, {
+					firstName: req.body.firstName || user.firstName,
+					lastName: req.body.lastName || user.lastName
+				})
+					.then(() => findUser(req.params.id, res));
+			})
+			.catch(() => res.status(401).send("{}"));
+	});
 router.route("/:id/password")
 	.put((req, res) => {
-		if (req.params.id !== req.user.id) {
+		if (req.user.role !== "admin" || req.params.id !== req.user.id) {
 			res.status(401).send("{}");
-			return;
 		}
 
 		users.login(req.params.id)
@@ -167,6 +182,11 @@ router.route("/:id/password")
 
 router.route("/convertToRegularUser")
 	.post((req, res) => {
+		if (req.user.role !== "admin") {
+			res.status(401).send("{}");
+			return;
+		}
+
 		bcrypt.hash(req.body.password, config.saltRounds)
 			.then((password) => {
 				users.convertToRegularUser(req.body.id, req.body.email, password)
