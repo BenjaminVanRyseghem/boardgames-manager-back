@@ -138,10 +138,6 @@ router.route("/:id")
 
 router.route("/:id/name")
 	.put((req, res) => {
-		if (req.user.role !== "admin" || req.params.id !== req.user.id) {
-			res.status(401).send("{}");
-		}
-
 		users.find(req.params.id)
 			.then((user) => {
 				if (!user) {
@@ -158,10 +154,6 @@ router.route("/:id/name")
 	});
 router.route("/:id/password")
 	.put((req, res) => {
-		if (req.user.role !== "admin" || req.params.id !== req.user.id) {
-			res.status(401).send("{}");
-		}
-
 		users.login(req.params.id)
 			.then((user) => {
 				if (!user || !bcrypt.compareSync(req.body.currentPassword, user.password)) { // eslint-disable-line no-sync
