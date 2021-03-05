@@ -23,7 +23,7 @@ router.route("/:locationId")
 	.get((req, res) => {
 		let promises = [
 			locations.find(req.params.locationId),
-			games.findInLocation(req.params.locationId)
+			games.findInLocation(req.params.locationId, req.user.id)
 		];
 
 		Promise.all(promises)
@@ -48,7 +48,7 @@ router.route("/:locationId")
 
 		let promises = [
 			locations.update(req.params.locationId, req.body),
-			games.findInLocation(req.params.locationId)
+			games.findInLocation(req.params.locationId, req.user.id)
 		];
 
 		Promise.all(promises)
@@ -71,11 +71,14 @@ router.route("/:locationId")
 			return;
 		}
 
-		games.findInLocation(req.params.locationId)
-			.then((allGames) => Promise.all(allGames.map((game) => games.update({
-				...game,
-				location: "1"
-			}))))
+		games.findInLocation(req.params.locationId, req.user.id)
+			.then((allGames) => Promise.all(allGames.map((game) => games.update(
+				{
+					...game,
+					location: "1"
+				},
+				req.user.id
+			))))
 			.then(() => locations.remove({
 				id: req.params.locationId
 			}))

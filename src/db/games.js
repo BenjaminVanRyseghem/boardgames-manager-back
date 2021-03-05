@@ -1,4 +1,4 @@
-/* eslint {"max-lines": [2, 450]} */
+/* eslint {"max-lines": [2, 500]} */
 const users = require("./users");
 const publishersDB = require("./publishers");
 const categoriesDB = require("./categories");
@@ -22,6 +22,7 @@ const actions = {
 	mechanics,
 	categories,
 	showBorrowed,
+	showFavorites,
 	publishers,
 	numberOfPlayers,
 	name: nameOfGame,
@@ -45,6 +46,17 @@ function age(number) {
 }
 
 function showBorrowed() {}
+
+function showFavorites(_, currentUserId) {
+	return users.login(currentUserId)
+		.then((user) => (datum) => {
+			if (!user.favorites) {
+				return false;
+			}
+
+			return user.favorites[datum.id];
+		});
+}
 
 function filterMeta(key, stringOrArray) {
 	let array = stringOrArray.constructor === Array ? stringOrArray : [stringOrArray];
@@ -99,7 +111,7 @@ function normalizePart({ part, database, reset, add }) {
 }
 
 // eslint-disable-next-line max-statements
-function normalizeGame(game) {
+function normalizeGame(game, currentUserId) {
 	if (!game) {
 		return Promise.resolve(undefined);
 	}
@@ -122,6 +134,11 @@ function normalizeGame(game) {
 			result.location = user;
 		}));
 	}
+
+	promises.push(users.login(currentUserId)
+		.then((user) => {
+			result.favorite = user.favorites && !!user.favorites[game.id];
+		}));
 
 	if (result.expand && !result.expand.id) {
 		promises.push(db
@@ -173,7 +190,7 @@ function trimQueries(queries) {
 	return result;
 }
 
-function getGame(id) {
+function getGame(id, currentUserId) {
 	return db
 		.then((database) => database.find({ id }))
 		.then((database) => database.value())
@@ -182,7 +199,7 @@ function getGame(id) {
 				return game;
 			}
 
-			return normalizeGame(game);
+			return normalizeGame(game, currentUserId);
 		});
 }
 
@@ -198,7 +215,7 @@ function has({ foreignId }) {
 		.then((data) => !!data.value());
 }
 
-function buildFiltersFrom(queries) {
+function buildFiltersFrom(queries, currentUserId) {
 	let filters = [];
 
 	Object.keys(queries).forEach((name) => {
@@ -208,7 +225,7 @@ function buildFiltersFrom(queries) {
 			return;
 		}
 
-		filters.push(actions[name](argument));
+		filters.push(actions[name](argument, currentUserId));
 	});
 
 	if (!+queries.showBorrowed) {
@@ -218,20 +235,21 @@ function buildFiltersFrom(queries) {
 	return filters;
 }
 
-function getAllGames(rawQueries = {}) {
+function getAllGames(rawQueries = {}, currentUserId) {
 	let queries = trimQueries(rawQueries);
 
-	let filters = buildFiltersFrom(queries);
+	let filters = buildFiltersFrom(queries, currentUserId);
 	let filter = db;
 
 	filters.forEach((each) => {
-		filter = filter.then((database) => database.filter(each));
+		filter = filter.then((database) => Promise.resolve(each)
+			.then((resolved) => database.filter(resolved)));
 	});
 
 	return filter
 		.then((database) => database.sortBy("name"))
 		.then((database) => database.value())
-		.then((games) => Promise.all(games.map((row) => normalizeGame(row))));
+		.then((games) => Promise.all(games.map((row) => normalizeGame(row, currentUserId))));
 }
 
 function convertToRegularUser(id, email) {
@@ -241,7 +259,7 @@ function convertToRegularUser(id, email) {
 		.then((database) => database.write());
 }
 
-function findAndUpdate(game, existFn, findOption) {
+function findAndUpdate({ game, existFn, findOption, currentUserId }) {
 	let promises = [];
 
 	if (game.categories && game.categories.length) {
@@ -271,11 +289,16 @@ function findAndUpdate(game, existFn, findOption) {
 				.then((database) => database.insert(game));
 		})
 		.then((database) => database.write())
-		.then((writtenData) => normalizeGame(writtenData));
+		.then((writtenData) => normalizeGame(writtenData, currentUserId));
 }
 
-function update(game) {
-	return findAndUpdate(game, hasById, { id: game.id });
+function update(game, currentUserId) {
+	return findAndUpdate({
+		game,
+		existFn: hasById,
+		findOption: { id: game.id },
+		currentUserId
+	});
 }
 
 function deleteGame({ id }) {
@@ -284,12 +307,17 @@ function deleteGame({ id }) {
 		.then((database) => database.write());
 }
 
-function register(game, location = "1") {
+function register(game, location = "1", currentUserId) {
 	return findAndUpdate({
-		location,
-		...game,
-		borrowed: null
-	}, has, { foreignId: game.foreignId });
+		game: {
+			location,
+			...game,
+			borrowed: null
+		},
+		existFn: has,
+		findOption: { foreignId: game.foreignId },
+		currentUserId
+	});
 }
 
 function countInLocation(location) {
@@ -300,12 +328,12 @@ function countInLocation(location) {
 		.then((games) => games.length);
 }
 
-function findInLocation(location) {
+function findInLocation(location, currentUserId) {
 	return db
 		.then((data) => data.filter((game) => game.location &&
 			(game.location === location || game.location.id === location)))
 		.then((data) => data.value())
-		.then((games) => Promise.all(games.map((game) => normalizeGame(game))));
+		.then((games) => Promise.all(games.map((game) => normalizeGame(game, currentUserId))));
 }
 
 function countByUser({ id }) {
@@ -316,12 +344,12 @@ function countByUser({ id }) {
 		.then((games) => games.length);
 }
 
-function findByUser(user) {
+function findByUser(user, currentUserId) {
 	return db
 		.then((data) => data.filter((game) => game.borrowed &&
 			(game.borrowed === user || game.borrowed.id === user)))
 		.then((data) => data.value())
-		.then((games) => Promise.all(games.map((game) => normalizeGame(game))));
+		.then((games) => Promise.all(games.map((game) => normalizeGame(game, currentUserId))));
 }
 
 module.exports = {

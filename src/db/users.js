@@ -93,6 +93,34 @@ function insert(data) {
 		.then((database) => database.write());
 }
 
+function like(id, gameId) {
+	return db
+		.then((database) => database.find({ id }))
+		.then((database) => {
+			let favorites = database.value().favorites || {};
+			favorites[gameId] = true;
+
+			return database.assign({
+				favorites
+			});
+		})
+		.then((database) => database.write());
+}
+
+function unlike(id, gameId) {
+	return db
+		.then((database) => database.find({ id }))
+		.then((database) => {
+			let favorites = database.value().favorites || {};
+			delete favorites[gameId];
+
+			return database.assign({
+				favorites
+			});
+		})
+		.then((database) => database.write());
+}
+
 function update(id, slice) {
 	return db
 		.then((database) => database.find({ id }))
@@ -122,7 +150,9 @@ module.exports = {
 	insert,
 	update,
 	convertToRegularUser,
-	login
+	login,
+	like,
+	unlike
 };
 
 db

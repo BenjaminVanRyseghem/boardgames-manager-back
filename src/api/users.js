@@ -92,10 +92,10 @@ router.route("/login")
 			.catch(() => res.sendStatus(404));
 	});
 
-function findUser(id, res) {
+function findUser(id, currentUserId, res) {
 	let promises = [
 		users.find(id),
-		games.findByUser(id)
+		games.findByUser(id, currentUserId)
 	];
 
 	return Promise.all(promises)
@@ -114,7 +114,7 @@ function findUser(id, res) {
 }
 
 router.route("/:id")
-	.get((req, res) => findUser(req.params.id, res))
+	.get((req, res) => findUser(req.params.id, req.user.id, res))
 	.put((req, res) => {
 		if (req.user.role !== "admin") {
 			res.status(401).send("{}");
@@ -131,7 +131,7 @@ router.route("/:id")
 					firstName: req.body.firstName || user.firstName,
 					lastName: req.body.lastName || user.lastName
 				})
-					.then(() => findUser(req.params.id, res));
+					.then(() => findUser(req.params.id, req.user.id, res));
 			})
 			.catch(() => res.status(401).send("{}"));
 	});
@@ -148,7 +148,7 @@ router.route("/:id/name")
 					firstName: req.body.firstName || user.firstName,
 					lastName: req.body.lastName || user.lastName
 				})
-					.then(() => findUser(req.params.id, res));
+					.then(() => findUser(req.params.id, req.user.id, res));
 			})
 			.catch(() => res.status(401).send("{}"));
 	});
@@ -182,7 +182,7 @@ router.route("/convertToRegularUser")
 		bcrypt.hash(req.body.password, config.saltRounds)
 			.then((password) => {
 				users.convertToRegularUser(req.body.id, req.body.email, password)
-					.then(() => findUser(req.body.email, res))
+					.then(() => findUser(req.body.email, req.user.id, res))
 					.catch(() => res.status(401).send("{}"));
 			});
 	});

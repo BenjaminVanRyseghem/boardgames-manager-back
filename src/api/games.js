@@ -28,27 +28,31 @@ const request = require("request");
  */
 router.route("/")
 	.get((req, res) => {
-		games.getAllGames(req.query)
+		games.getAllGames(req.query, req.user.id)
 			.then((data) => {
 				res.setHeader("Content-Type", "application/json");
 				res.send(JSON.stringify(data));
 			});
 	});
 
+function findGame(id, currentUserId, res) {
+	return games.getGame(id, currentUserId)
+		.then((game) => {
+			if (game) {
+				res.setHeader("Content-Type", "application/json");
+				res.send(game);
+			} else {
+				res.send(JSON.stringify({
+					error: new Error("Game not found"),
+					code: 404
+				}));
+			}
+		});
+}
+
 router.route("/:gameId")
 	.get((req, res) => {
-		games.getGame(req.params.gameId)
-			.then((game) => {
-				if (game) {
-					res.setHeader("Content-Type", "application/json");
-					res.send(game);
-				} else {
-					res.send(JSON.stringify({
-						error: new Error("Game not found"),
-						code: 404
-					}));
-				}
-			});
+		return findGame(req.params.gameId, req.user.id, res);
 	})
 	.put((req, res) => {
 		if (req.user.role !== "admin") {
@@ -56,10 +60,13 @@ router.route("/:gameId")
 			return;
 		}
 
-		games.update({
-			...req.body,
-			id: req.params.gameId
-		}).then((game) => {
+		games.update(
+			{
+				...req.body,
+				id: req.params.gameId
+			},
+			req.user.id
+		).then((game) => {
 			if (game) {
 				res.setHeader("Content-Type", "application/json");
 				res.send(game);
@@ -81,7 +88,8 @@ router.route("/:gameId")
 			if (!err && statusCode === 200) {
 				games.register(
 					BggAdapter.import(body, req.body.nameType || "primary", req.body.name),
-					req.body.location
+					req.body.location,
+					req.user.id
 				)
 					.then((game) => {
 						if (game) {
@@ -111,6 +119,17 @@ router.route("/:gameId")
 			res.setHeader("Content-Type", "application/json");
 			res.send(game);
 		});
+	});
+
+router.route("/:gameId/like")
+	.post((req, res) => {
+		if (req.body.like) {
+			require("../db/users").like(req.user.id, req.params.gameId) // eslint-disable-line global-require
+				.then(() => findGame(req.params.gameId, req.user.id, res));
+		} else {
+			require("../db/users").unlike(req.user.id, req.params.gameId) // eslint-disable-line global-require
+				.then(() => findGame(req.params.gameId, req.user.id, res));
+		}
 	});
 
 module.exports = router;
