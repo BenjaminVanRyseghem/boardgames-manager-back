@@ -22,7 +22,7 @@ const actions = {
 	mechanics,
 	categories,
 	showBorrowed,
-	showFavorites,
+	onlyFavorites,
 	publishers,
 	numberOfPlayers,
 	name: nameOfGame,
@@ -47,7 +47,7 @@ function age(number) {
 
 function showBorrowed() {}
 
-function showFavorites(_, currentUserId) {
+function onlyFavorites(_, currentUserId) {
 	return users.login(currentUserId)
 		.then((user) => (datum) => {
 			if (!user.favorites) {
