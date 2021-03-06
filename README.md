@@ -1,11 +1,32 @@
 # boardgame-manager
 Boardgame database with a web interface
 
-# Run
+## Features
+
+- [x] Progressive Web App
+- [x] Import games from [BGG](boardgamegeek.com/)
+- [x] Locations
+- [x] Users and roles
+	- [x] Convert borrower to regular users
+- [x] Search with multiple filters
+	- [x] Name
+	- [x] Age
+	- [x] Number of players
+	- [x] Publisher
+	- [x] Mechanics
+	- [x] Category
+	- [x] Borrowed games
+	- [x] Favorites
+- [x] Favorites
+- [x] Expansions linked to games
+- [x] Loan of games
+- [ ] Create game from scratch when not found in BGG
+
+## Run
 
     npm start
 
-# License
+## License
 
 Copyright (c) Benjamin Van Ryseghem <benjamin@vanryseghem.com>
 
