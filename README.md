@@ -8,6 +8,7 @@ Boardgame database with a web interface
 - [x] Locations
 - [x] Users and roles
 	- [x] Convert borrower to regular users
+	- [x] Redirect to login on token expiration
 - [x] Search with multiple filters
 	- [x] Name
 	- [x] Age

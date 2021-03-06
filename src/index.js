@@ -11,6 +11,7 @@ const https = require("https");
 const fs = require("fs");
 const morgan = require("morgan");
 const routes = require("./routes");
+const handleErrors = require("./handleErrors");
 
 const config = require("./config");
 const jwt = require("./helpers/jwt");
@@ -29,12 +30,13 @@ app.use(compression());
 app.use(helmet());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(morgan("tiny"));
+app.use(morgan("common"));
 app.use(expressSanitized.middleware());
 app.use(entityDecoder());
 
 app.use("/api/", jwt());
 app.use("/api/v1", routes);
+app.use("/api/v1", handleErrors);
 
 app.use(express.static("public"));
 app.use("/*", (req, res) => {
