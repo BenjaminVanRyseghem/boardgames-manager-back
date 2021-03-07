@@ -19,6 +19,7 @@ const db = low(adapter).then((database) => {
 
 const actions = {
 	age,
+	complexity,
 	mechanics,
 	categories,
 	showBorrowed,
@@ -42,7 +43,21 @@ function numberOfPlayers(number) {
 }
 
 function age(number) {
-	return (datum) => datum.minAge <= +number;
+	return (datum) => {
+		if (datum.minAge === "0") {
+			return false;
+		}
+		return datum.minAge <= +number;
+	};
+}
+
+function complexity(number) {
+	return (datum) => {
+		if (datum.complexity === null || datum.complexity === undefined) {
+			return false;
+		}
+		return datum.complexity / 20 <= +number;
+	};
 }
 
 function showBorrowed() {}
@@ -301,6 +316,13 @@ function update(game, currentUserId) {
 	});
 }
 
+function updateRaw(id, slice) {
+	return db
+		.then((database) => database.find({ id }))
+		.then((database) => database.assign(slice))
+		.then((database) => database.write());
+}
+
 function deleteGame({ id }) {
 	return db
 		.then((database) => database.remove({ id }))
@@ -357,6 +379,7 @@ module.exports = {
 	getAllGames,
 	register,
 	update,
+	updateRaw,
 	deleteGame,
 	getGame,
 	findInLocation,

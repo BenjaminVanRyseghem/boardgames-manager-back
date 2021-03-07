@@ -3,6 +3,7 @@ Boardgame database with a web interface
 
 ## Features
 
+- [x] English/French support
 - [x] Progressive Web App
 - [x] Import games from [BGG](boardgamegeek.com/)
 - [x] Locations
@@ -22,6 +23,11 @@ Boardgame database with a web interface
 - [x] Expansions linked to games
 - [x] Loan of games
 - [ ] Create game from scratch when not found in BGG
+
+## To do
+
+- [ ] Import game weight
+- [x] Fix "add-game" on mobile
 
 ## Run
 

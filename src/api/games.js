@@ -1,9 +1,9 @@
 /* eslint-disable filenames/match-exported */
 const BggAdapter = require("../models/adapters/bggAdapter");
 const games = require("../db/games");
+const request = require("request");
 const { Router } = require("express");
 const router = new Router();
-const request = require("request");
 
 /**
  * @swagger
@@ -51,9 +51,7 @@ function findGame(id, currentUserId, res) {
 }
 
 router.route("/:gameId")
-	.get((req, res) => {
-		return findGame(req.params.gameId, req.user.id, res);
-	})
+	.get((req, res) => findGame(req.params.gameId, req.user.id, res))
 	.put((req, res) => {
 		if (req.user.role !== "admin") {
 			res.status(401).send("{}");
@@ -84,7 +82,7 @@ router.route("/:gameId")
 			return;
 		}
 
-		request.get(`https://www.boardgamegeek.com/xmlapi2/thing?id=${req.params.gameId}`, (err, { statusCode }, body) => {
+		request.get(`https://www.boardgamegeek.com/xmlapi2/thing?id=${req.params.gameId}&stats=1`, (err, { statusCode }, body) => {
 			if (!err && statusCode === 200) {
 				games.register(
 					BggAdapter.import(body, req.body.nameType || "primary", req.body.name),

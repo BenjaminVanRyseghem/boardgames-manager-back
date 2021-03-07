@@ -22,6 +22,7 @@ let convertXmlToJson = (xml) => {
 				type: data.type,
 				name: data.name.value,
 				nameType: data.name.type,
+				complexity: data.weight,
 				id: data.id,
 				source: "boardgamegeek",
 				page: `https://www.boardgamegeek.com/${data.type}/${data.id}`

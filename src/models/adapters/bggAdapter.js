@@ -6,7 +6,11 @@ function findName(itemName, type, search) {
 		return itemName.value;
 	}
 
-	return itemName.find((each) => each.type === type && each.value === search).value;
+	let found = itemName.find((each) => each.type === type && each.value === search);
+
+	return found
+		? found.value
+		: findName(itemName, "primary", search);
 }
 
 const itemTypes = {
@@ -16,6 +20,15 @@ const itemTypes = {
 
 function convertType(type) {
 	return itemTypes[type] || types.game;
+}
+
+function computeComplexity(item) {
+	let { ratings } = item.statistics;
+	if (ratings.averageweight.value === "0" && ratings.numweights.value === "0") {
+		return null;
+	}
+
+	return +ratings.averageweight.value * 100 / 5;
 }
 
 /**
@@ -46,7 +59,9 @@ module.exports = class BggAdapter {
 			categories: [],
 			publishers: [],
 			mechanics: [],
-			type: convertType(item.type)
+			from: "boardgamegeek",
+			type: convertType(item.type),
+			complexity: computeComplexity(item)
 		};
 
 		if (result.type === types.expansion) {

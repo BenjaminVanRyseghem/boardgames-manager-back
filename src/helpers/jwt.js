@@ -15,7 +15,10 @@ function jwt() {
 			secret,
 			isRevoked
 		}).unless({
-			path: ["/api/v1/user/login"],
+			path: [
+				"/api/v1/user/login",
+				/\/api\/v1\/docs\/.*/
+			],
 			custom: (req) => {
 				if (req.method !== "POST") {
 					return false;

@@ -12,9 +12,10 @@ const publishers = require("./api/publishers");
 const locations = require("./api/locations");
 const search = require("./api/search");
 const users = require("./api/users");
+const maintenance = require("./api/maintenance");
 
 routes.route("/").get((req, res) => {
-	res.json({ message: "Welcome to mini42-backend API!" });
+	res.json({ message: "Welcome to boardgames-manager API!" });
 });
 
 routes.use("/game", games);
@@ -24,18 +25,19 @@ routes.use("/category", categories);
 routes.use("/mechanic", mechanics);
 routes.use("/search", search);
 routes.use("/user", users);
+routes.use("/maintenance", maintenance);
 
 const options = {
 	swaggerDefinition: {
 		openapi: "3.0.0",
 		info: {
-			title: "Time to document that Express API you built",
+			title: "Boardgames manager API",
 			version: "1.0.0",
 			description:
-				"A test project to understand how easy it is to document and Express API",
+				"Express API for Boardgames Manager",
 			license: {
-				name: "MIT",
-				url: "https://choosealicense.com/licenses/mit/"
+				name: "GNU General Public License v3.0",
+				url: "https://choosealicense.com/licenses/gpl-3.0/"
 			},
 			contact: {
 				name: "Benjamin Van Ryseghem",
