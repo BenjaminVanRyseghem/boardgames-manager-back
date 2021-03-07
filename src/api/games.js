@@ -1,6 +1,7 @@
 /* eslint-disable filenames/match-exported */
 const BggAdapter = require("../models/adapters/bggAdapter");
 const games = require("../db/games");
+const random = require("random");
 const request = require("request");
 const { Router } = require("express");
 const router = new Router();
@@ -49,6 +50,36 @@ function findGame(id, currentUserId, res) {
 			}
 		});
 }
+
+router.route("/random")
+	.get((req, res) => games.getAllGames({ showExpansions: 0 }, req.user.id)
+		.then((allGames) => {
+			if (!allGames.length) {
+				res.status(200).send(JSON.stringify({ id: -1 }));
+				return;
+			}
+
+			let foundGame = null;
+			if (req.session.lastRandom) {
+				let filteredGames = allGames.filter((game) => game.id !== req.session.lastRandom);
+				let { length } = filteredGames;
+				let index = random.int(0, length - 1);
+				foundGame = filteredGames[index];
+			} else {
+				let { length } = allGames;
+				let index = random.int(0, length - 1);
+				foundGame = allGames[index];
+			}
+
+			if (!foundGame) {
+				res.status(200).send(JSON.stringify({ id: -1 }));
+				return;
+			}
+
+			let { id } = foundGame;
+			req.session.lastRandom = id;
+			res.status(200).send(JSON.stringify({ id }));
+		}));
 
 router.route("/:gameId")
 	.get((req, res) => findGame(req.params.gameId, req.user.id, res))

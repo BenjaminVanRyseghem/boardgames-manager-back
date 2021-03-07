@@ -12,7 +12,6 @@ const publishers = require("./api/publishers");
 const locations = require("./api/locations");
 const search = require("./api/search");
 const users = require("./api/users");
-const maintenance = require("./api/maintenance");
 
 routes.route("/").get((req, res) => {
 	res.json({ message: "Welcome to boardgames-manager API!" });
@@ -25,7 +24,12 @@ routes.use("/category", categories);
 routes.use("/mechanic", mechanics);
 routes.use("/search", search);
 routes.use("/user", users);
-routes.use("/maintenance", maintenance);
+
+/*
+ * // Activate at will
+ * const maintenance = require("./api/maintenance");
+ * routes.use("/maintenance", maintenance);
+ */
 
 const options = {
 	swaggerDefinition: {

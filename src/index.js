@@ -12,6 +12,9 @@ const fs = require("fs");
 const morgan = require("morgan");
 const routes = require("./routes");
 const handleErrors = require("./handleErrors");
+const session = require("express-session");
+
+const MemoryStore = require("memorystore")(session);
 
 const config = require("./config");
 const jwt = require("./helpers/jwt");
@@ -19,8 +22,27 @@ const jwt = require("./helpers/jwt");
 const expressSanitized = require("express-sanitize-escape");
 const entityDecoder = require("./middlewares/entityDecoder");
 
+const twentyFourHours = 86400000;
+
 // initialise express
 let app = express();
+
+let currentSession = {
+	secret: process.env.SESSION_SECRET, // eslint-disable-line no-process-env
+	cookie: { maxAge: twentyFourHours },
+	store: new MemoryStore({
+		checkPeriod: twentyFourHours
+	}),
+	resave: false,
+	saveUninitialized: false
+};
+
+if (app.get("env") === "production") {
+	app.set("trust proxy", 1);
+	currentSession.cookie.secure = true;
+}
+
+app.use(session(currentSession));
 
 app.use(redirectToHTTPS([
 	/127.0.0.1/,
