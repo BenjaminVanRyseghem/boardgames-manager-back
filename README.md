@@ -25,6 +25,10 @@ Boardgame database with a web interface
 - [x] Loan of games
 - [ ] Create game from scratch when not found in BGG
 
+## Todo
+
+Fetch french boardgameversion
+
 ## Run
 
     npm start

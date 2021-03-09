@@ -49,11 +49,6 @@ router.route("/")
 		});
 	})
 	.post((req, res) => {
-		if (req.user.role !== "admin") {
-			res.status(401).send("{}");
-			return;
-		}
-
 		bcrypt.hash(req.body.password, config.saltRounds)
 			.then((hash) => users.insert({
 				id: req.body.email,
