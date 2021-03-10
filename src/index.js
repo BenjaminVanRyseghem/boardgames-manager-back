@@ -7,6 +7,7 @@ const compression = require("compression");
 const express = require("express");
 const helmet = require("helmet");
 const http = require("http");
+const http2 = require("http2");
 const https = require("https");
 const fs = require("fs");
 const morgan = require("morgan");
@@ -76,14 +77,19 @@ app.get("/", (req, res) => {
 if (process.env.USE_SSL && process.env.KEY && process.env.CERT) { // eslint-disable-line no-process-env
 	let options = {
 		key: fs.readFileSync(process.env.KEY), // eslint-disable-line no-sync,no-process-env
-		cert: fs.readFileSync(process.env.CERT) // eslint-disable-line no-sync,no-process-env
+		cert: fs.readFileSync(process.env.CERT), // eslint-disable-line no-sync,no-process-env
+		allowHTTP1: true
 	};
-	let index = https.createServer(options, app).listen(config.server.sslPort, () => {
-		console.log("\nSecured server ready on port %d\n", index.address().port); // eslint-disable-line no-console
+
+	let indexHTTPS = https.createServer(options, app).listen(config.server.sslPort, () => {
+		console.log("\nSecured server ready on port %d\n", indexHTTPS.address().port); // eslint-disable-line no-console
+	});
+
+	let index = http2.createSecureServer(options, app).listen(config.server.port, () => {
+		console.log("\nSecured HTTP2 server ready on port %d\n", index.address().port); // eslint-disable-line no-console
+	});
+} else {
+	let index = http.createServer(app).listen(config.server.port, () => { // eslint-disable-line no-process-env
+		console.log("\nServer ready on port %d\n", index.address().port); // eslint-disable-line no-console
 	});
 }
-
-// start the server
-let index = http.createServer(app).listen(config.server.port, () => { // eslint-disable-line no-process-env
-	console.log("\nServer ready on port %d\n", index.address().port); // eslint-disable-line no-console
-});
