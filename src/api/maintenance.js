@@ -1,7 +1,6 @@
-/* eslint-disable filenames/match-exported */
+/* eslint-disable filenames/match-exported,no-console */
 const games = require("../db/games");
-const request = require("request");
-const BggAdapter = require("../models/adapters/bggAdapter");
+const { fetchLang } = require("./games");
 const { Router } = require("express");
 const router = new Router();
 
@@ -14,27 +13,32 @@ router.route("/")
 
 		games.getAllGames({}, req.user.id)
 			.then((allGames) => {
-				let promises = allGames.map((game) => new Promise((resolve) => {
-					request.get(`https://www.boardgamegeek.com/xmlapi2/thing?id=${game.foreignId}&stats=1`, (err, { statusCode }, body) => {
-						if (!err && statusCode === 200) {
-							let updatedData = BggAdapter.import(body, "alternate", game.name);
-							let { from, complexity } = updatedData;
+				let promises = allGames.map((game) => new Promise((resolve, reject) => {
+					if (game.lang) {
+						console.log(`${game.id} already done`);
+						return resolve();
+					}
 
-							resolve(games.updateRaw(game.id, {
-								from,
-								complexity
-							}));
-						} else {
-							console.error(`Failed to update ${game.name}`);
-							resolve();
-						}
-					});
+					return fetchLang(game.foreignId, "fr")
+						.then((data) => {
+							data.lang = "fr";
+							resolve(games.updateRaw(game.id, data));
+							console.log(`${game.id} updated`);
+						})
+						.catch((err) => {
+							console.error(`Error while updating ${game.id}`);
+							reject(err);
+						});
 				}));
 
 				return Promise.all(promises);
 			})
 			.then(() => {
+				console.log("All done");
 				res.status(200).send("OK");
+			})
+			.catch(() => {
+				res.status(500).send("KO");
 			});
 	});
 

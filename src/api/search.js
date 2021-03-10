@@ -1,5 +1,5 @@
 /* eslint-disable filenames/match-exported */
-const request = require("request");
+const fetch = require("node-fetch");
 const xml2json = require("xml2json");
 const { Router } = require("express");
 const router = new Router();
@@ -47,19 +47,21 @@ router.route("/bgg")
 		if (req.query.exact === "true") {
 			uri += "&exact=1";
 		}
-		request.get(uri, (err, { statusCode }, body) => {
-			if (!err && statusCode === 200) {
+
+		return fetch(uri)
+			.then((body) => body.text())
+			.then((body) => {
 				res.setHeader("Content-Type", "application/json");
 				res.send(convertXmlToJson(body));
-			} else {
+			})
+			.catch((err) => {
 				res.status(500);
 				res.setHeader("Content-Type", "application/json");
 				res.send(JSON.stringify({
 					error: err,
 					code: 500
 				}));
-			}
-		});
+			});
 	});
 
 module.exports = router;

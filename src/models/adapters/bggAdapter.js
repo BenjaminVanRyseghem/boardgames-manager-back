@@ -36,8 +36,7 @@ function computeComplexity(item) {
  * @class
  */
 module.exports = class BggAdapter {
-	static import(xml, type, search) {
-		let data = xml2json.toJson(xml, { object: true });
+	static import(data, type, search) {
 		if (!data || !data.items || !data.items.item) {
 			return null;
 		}

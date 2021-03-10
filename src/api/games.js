@@ -1,10 +1,19 @@
 /* eslint-disable filenames/match-exported */
+const { parse } = require("node-html-parser");
 const BggAdapter = require("../models/adapters/bggAdapter");
 const games = require("../db/games");
+const he = require("he");
 const random = require("random");
-const request = require("request");
+const fetch = require("node-fetch");
 const { Router } = require("express");
 const router = new Router();
+const xml2json = require("xml2json");
+
+const versionsConvert = {
+	fr: /^French edition$/
+};
+
+const descriptionEmpty = "This page does not exist. You can edit this page to create it.";
 
 /**
  * @swagger
@@ -12,6 +21,117 @@ const router = new Router();
  *   name: Users
  *   description: User management
  */
+
+function registerGame({ gameData, location, currentUserId, res }) {
+	games.register(
+		gameData,
+		location,
+		currentUserId
+	)
+		.then((game) => {
+			if (game) {
+				res.setHeader("Content-Type", "application/json");
+				res.send(game);
+			} else {
+				res.status(404).send(JSON.stringify({
+					error: new Error("Game not found"),
+					code: 404
+				}));
+			}
+		});
+}
+
+function findGame(id, currentUserId, res) {
+	return games.getGame(id, currentUserId)
+		.then((game) => {
+			if (game) {
+				res.setHeader("Content-Type", "application/json");
+				res.send(game);
+			} else {
+				res.status(404).send(JSON.stringify({
+					error: new Error("Game not found"),
+					code: 404
+				}));
+			}
+		});
+}
+
+function fetchLang(gameId, lang) {
+	return new Promise((resolve, reject) => {
+		fetch(`https://www.boardgamegeek.com/xmlapi/boardgame/${gameId}?stats=1`)
+			.then((body) => body.text())
+			.then((body) => {
+				let data = xml2json.toJson(body, { object: true });
+				let versions = data.boardgames.boardgame.boardgameversion;
+				if (versions.constructor !== Array) {
+					versions = [versions];
+				}
+
+				let id = versions.find((each) => each.$t.match(versionsConvert[lang]));
+				if (!id) {
+					resolve({});
+					return Promise.resolve(null);
+				}
+				return fetch(`https://boardgamegeek.com/boardgameversion/${id.objectid}`)
+					.then((bodyVersion) => bodyVersion.text());
+			})
+			.then((bodyLang) => { // eslint-disable-line max-statements
+				let result = {};
+
+				if (!bodyLang) {
+					resolve(result);
+					return;
+				}
+
+				let root = parse(bodyLang);
+				let desc = root.querySelector("#editdesc");
+
+				if (desc) {
+					let description = desc.innerText.trim();
+					if (description !== descriptionEmpty) {
+						result.description = he.decode(description);
+					}
+				}
+
+				let nameNode = root.querySelector("#edit_linkednameid");
+				if (nameNode) {
+					result.name = he.decode(nameNode.innerText.trim());
+				}
+
+				let img = root.querySelector(".mt5 a");
+
+				if (!img) {
+					resolve(result);
+					return;
+				}
+
+				let match = img.getAttribute("href").match(/\/image\/(\d+).*/);
+				let [_, imageId] = match;
+
+				fetch(`https://api.geekdo.com/api/images/${imageId}`)
+					.then((body) => body.json())
+					.then((imageData) => {
+						if (!imageData) {
+							resolve(result);
+							return;
+						}
+						let picture = imageData.images.original.url;
+
+						if (picture) {
+							result.picture = picture;
+						}
+
+						resolve(result);
+					})
+					.catch((err) => {
+						reject(new Error(err));
+					});
+			})
+			.catch((err) => {
+				reject(new Error(err));
+			});
+	});
+}
 
 /**
  * @swagger
@@ -34,26 +154,62 @@ router.route("/")
 				res.setHeader("Content-Type", "application/json");
 				res.send(JSON.stringify(data));
 			});
-	});
+	})
+	.post((req, res) => {
+		if (req.user.role !== "admin") {
+			res.status(401).send("{}");
+			return;
+		}
 
-function findGame(id, currentUserId, res) {
-	return games.getGame(id, currentUserId)
-		.then((game) => {
-			if (game) {
+		fetch(`https://www.boardgamegeek.com/xmlapi2/thing?id=${req.body.gameId}&stats=1`)
+			.then((body) => body.text())
+			.then((body) => {
+				let gameData = BggAdapter.import(
+					xml2json.toJson(body, { object: true }),
+					req.body.nameType || "primary",
+					req.body.name
+				);
+
+				gameData.lang = req.body.lang || "en";
+
+				if (req.body.lang && req.body.lang !== "en") {
+					fetchLang(req.body.gameId, req.body.lang)
+						.then((data) => {
+							Object.assign(gameData, data);
+						})
+						.catch((err) => {
+							console.error(err); // eslint-disable-line no-console
+						})
+						.finally(() => {
+							registerGame({
+								gameData,
+								location: req.body.location,
+								currentUserId: req.user.id,
+								res
+							});
+						});
+					return;
+				}
+				registerGame({
+					gameData,
+					location: req.body.location,
+					currentUserId: req.user.id,
+					res
+				});
+			})
+			.catch((err) => {
+				res.status(500);
 				res.setHeader("Content-Type", "application/json");
-				res.send(game);
-			} else {
 				res.send(JSON.stringify({
-					error: new Error("Game not found"),
-					code: 404
+					error: err,
+					code: 500
 				}));
-			}
-		});
-}
+			});
+	});
 
 router.route("/random")
 	.get((req, res) => games.getAllGames({ showExpansions: 0 }, req.user.id)
-		.then((allGames) => {
+		.then((allGames) => { // eslint-disable-line max-statements
 			if (!allGames.length) {
 				res.status(200).send(JSON.stringify({ id: -1 }));
 				return;
@@ -100,43 +256,9 @@ router.route("/:gameId")
 				res.setHeader("Content-Type", "application/json");
 				res.send(game);
 			} else {
-				res.send(JSON.stringify({
+				res.status(404).send(JSON.stringify({
 					error: new Error("Game not found"),
 					code: 404
-				}));
-			}
-		});
-	})
-	.post((req, res) => {
-		if (req.user.role !== "admin") {
-			res.status(401).send("{}");
-			return;
-		}
-
-		request.get(`https://www.boardgamegeek.com/xmlapi2/thing?id=${req.params.gameId}&stats=1`, (err, { statusCode }, body) => {
-			if (!err && statusCode === 200) {
-				games.register(
-					BggAdapter.import(body, req.body.nameType || "primary", req.body.name),
-					req.body.location,
-					req.user.id
-				)
-					.then((game) => {
-						if (game) {
-							res.setHeader("Content-Type", "application/json");
-							res.send(game);
-						} else {
-							res.send(JSON.stringify({
-								error: new Error("Game not found"),
-								code: 404
-							}));
-						}
-					});
-			} else {
-				res.status(500);
-				res.setHeader("Content-Type", "application/json");
-				res.send(JSON.stringify({
-					error: err,
-					code: 500
 				}));
 			}
 		});
@@ -162,3 +284,4 @@ router.route("/:gameId/like")
 	});
 
 module.exports = router;
+module.exports.fetchLang = fetchLang;
