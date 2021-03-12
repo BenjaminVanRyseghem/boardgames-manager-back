@@ -1,4 +1,3 @@
-const xml2json = require("xml2json");
 const types = require("../types");
 
 function findName(itemName, type, search) {
@@ -8,9 +7,15 @@ function findName(itemName, type, search) {
 
 	let found = itemName.find((each) => each.type === type && each.value === search);
 
-	return found
-		? found.value
-		: findName(itemName, "primary", search);
+	if (found) {
+		return found.value;
+	}
+
+	if (type !== "primary") {
+		return findName(itemName, "primary", search);
+	}
+
+	return null;
 }
 
 const itemTypes = {

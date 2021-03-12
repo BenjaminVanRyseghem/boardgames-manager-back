@@ -1,4 +1,5 @@
 /* eslint-disable filenames/match-exported */
+/* eslint max-lines: [2, 350] */
 const { parse } = require("node-html-parser");
 const BggAdapter = require("../models/adapters/bggAdapter");
 const games = require("../db/games");
@@ -56,6 +57,21 @@ function findGame(id, currentUserId, res) {
 		});
 }
 
+function fetchPicture(imageId) {
+	if (!imageId) {
+		return Promise.resolve(null);
+	}
+	return fetch(`https://api.geekdo.com/api/images/${imageId}`)
+		.then((body) => body.json())
+		.then((body) => {
+			if (!body) {
+				return null;
+			}
+
+			return body.images.itempage.url;
+		});
+}
+
 function fetchLang(gameId, lang) {
 	return new Promise((resolve, reject) => {
 		fetch(`https://www.boardgamegeek.com/xmlapi/boardgame/${gameId}?stats=1`)
@@ -108,19 +124,14 @@ function fetchLang(gameId, lang) {
 				let match = img.getAttribute("href").match(/\/image\/(\d+).*/);
 				let [_, imageId] = match;
 
-				fetch(`https://api.geekdo.com/api/images/${imageId}`)
-					.then((body) => body.json())
-					.then((imageData) => {
-						if (!imageData) {
+				fetchPicture(imageId)
+					.then((pictureUrl) => {
+						if (!pictureUrl) {
 							resolve(result);
 							return;
 						}
-						let picture = imageData.images.original.url;
 
-						if (picture) {
-							result.picture = picture;
-						}
-
+						result.picture = pictureUrl;
 						resolve(result);
 					})
 					.catch((err) => {
@@ -171,31 +182,41 @@ router.route("/")
 				);
 
 				gameData.lang = req.body.lang || "en";
-
-				if (req.body.lang && req.body.lang !== "en") {
-					fetchLang(req.body.gameId, req.body.lang)
-						.then((data) => {
-							Object.assign(gameData, data);
-						})
-						.catch((err) => {
-							console.error(err); // eslint-disable-line no-console
-						})
-						.finally(() => {
-							registerGame({
-								gameData,
-								location: req.body.location,
-								currentUserId: req.user.id,
-								res
-							});
-						});
-					return;
+				let picId = null;
+				if (gameData.picture) {
+					picId = gameData.picture.match(/pic(\d+)\./)[1];
 				}
-				registerGame({
-					gameData,
-					location: req.body.location,
-					currentUserId: req.user.id,
-					res
-				});
+
+				fetchPicture(picId)
+					.then((pictureUrl) => {
+						gameData.picture = pictureUrl;
+
+						if (req.body.lang && req.body.lang !== "en") {
+							fetchLang(req.body.gameId, req.body.lang)
+								.then((data) => {
+									Object.assign(gameData, data);
+								})
+								.catch((err) => {
+									console.error(err); // eslint-disable-line no-console
+								})
+								.finally(() => {
+									registerGame({
+										gameData,
+										location: req.body.location,
+										currentUserId: req.user.id,
+										res
+									});
+								});
+							return;
+						}
+
+						registerGame({
+							gameData,
+							location: req.body.location,
+							currentUserId: req.user.id,
+							res
+						});
+					});
 			})
 			.catch((err) => {
 				res.status(500);
