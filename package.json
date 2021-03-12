@@ -19,7 +19,7 @@
     "lint": "npx eslint src",
     "deploy": "rsync -aP -e \"ssh\" . chani:/Users/benjamin/boardgames-manager --exclude=.git --exclude=.DS_Store --exclude=.env --exclude=.idea  --exclude=public --exclude=node_modules  --exclude=/db",
     "backup": "rsync -aP -e \"ssh\" chani:/Users/benjamin/boardgames-manager/db ~/projects/backup/boardgames-manager",
-    "restore": "rsync -aP -e \"ssh\" ~/projects/backup/boardgames-manager chani:/Users/benjamin/boardgames-manager/db"
+    "restore": "rsync -aP -e \"ssh\" ~/projects/backup/boardgames-manager/db chani:/Users/benjamin/boardgames-manager"
   },
   "keywords": [],
   "devDependencies": {
