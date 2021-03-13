@@ -11,7 +11,8 @@ const router = new Router();
 const xml2json = require("xml2json");
 
 const versionsConvert = {
-	fr: /^French edition$/
+	en: /english/i,
+	fr: /french/i
 };
 
 const descriptionEmpty = "This page does not exist. You can edit this page to create it.";
@@ -72,76 +73,56 @@ function fetchPicture(imageId) {
 		});
 }
 
-function fetchLang(gameId, lang) {
-	return new Promise((resolve, reject) => {
-		fetch(`https://www.boardgamegeek.com/xmlapi/boardgame/${gameId}?stats=1`)
-			.then((body) => body.text())
-			.then((body) => {
-				let data = xml2json.toJson(body, { object: true });
-				let versions = data.boardgames.boardgame.boardgameversion;
-				if (versions.constructor !== Array) {
-					versions = [versions];
+function fetchVersion(versionId) {
+	return new Promise((resolve, reject) => fetch(`https://boardgamegeek.com/boardgameversion/${versionId}`)
+		.then((body) => body.text())
+		.then((body) => { // eslint-disable-line max-statements
+			let result = {};
+
+			if (!body) {
+				resolve(result);
+				return;
+			}
+
+			let root = parse(body);
+			let desc = root.querySelector("#editdesc");
+
+			if (desc) {
+				let description = desc.innerText.trim();
+				if (description !== descriptionEmpty) {
+					result.description = he.decode(description);
 				}
+			}
 
-				let id = versions.find((each) => each.$t.match(versionsConvert[lang]));
-				if (!id) {
-					resolve({});
-					return Promise.resolve(null);
-				}
-				return fetch(`https://boardgamegeek.com/boardgameversion/${id.objectid}`)
-					.then((bodyVersion) => bodyVersion.text());
-			})
-			.then((bodyLang) => { // eslint-disable-line max-statements
-				let result = {};
+			let nameNode = root.querySelector("#edit_linkednameid");
+			if (nameNode) {
+				result.name = he.decode(nameNode.innerText.trim());
+			}
 
-				if (!bodyLang) {
-					resolve(result);
-					return;
-				}
+			let img = root.querySelector(".mt5 a");
 
-				let root = parse(bodyLang);
-				let desc = root.querySelector("#editdesc");
+			if (!img) {
+				resolve(result);
+				return;
+			}
 
-				if (desc) {
-					let description = desc.innerText.trim();
-					if (description !== descriptionEmpty) {
-						result.description = he.decode(description);
-					}
-				}
+			let match = img.getAttribute("href").match(/\/image\/(\d+).*/);
+			let [_, imageId] = match;
 
-				let nameNode = root.querySelector("#edit_linkednameid");
-				if (nameNode) {
-					result.name = he.decode(nameNode.innerText.trim());
-				}
-
-				let img = root.querySelector(".mt5 a");
-
-				if (!img) {
-					resolve(result);
-					return;
-				}
-
-				let match = img.getAttribute("href").match(/\/image\/(\d+).*/);
-				let [_, imageId] = match;
-
-				fetchPicture(imageId)
-					.then((pictureUrl) => {
-						if (!pictureUrl) {
-							resolve(result);
-							return;
-						}
-
-						result.picture = pictureUrl;
+			fetchPicture(imageId)
+				.then((pictureUrl) => {
+					if (!pictureUrl) {
 						resolve(result);
-					})
-					.catch((err) => {
-						reject(new Error(err));
-					});
-			})
-			.catch((err) => {
-				reject(new Error(err));
-			});
-	});
+						return;
+					}
+
+					result.picture = pictureUrl;
+					resolve(result);
+				})
+				.catch((err) => {
+					reject(new Error(err));
+				});
+		}));
 }
 
 /**
@@ -172,47 +153,19 @@ router.route("/")
 			return;
 		}
 
-		fetch(`https://www.boardgamegeek.com/xmlapi2/thing?id=${req.body.gameId}&stats=1`)
+		let { gameId, location, version } = req.body;
+		fetch(`https://www.boardgamegeek.com/xmlapi2/thing?id=${gameId}&stats=1`)
 			.then((body) => body.text())
 			.then((body) => {
-				let gameData = BggAdapter.import(
-					xml2json.toJson(body, { object: true }),
-					req.body.nameType || "primary",
-					req.body.name
-				);
+				let data = BggAdapter.import(xml2json.toJson(body, { object: true }));
 
-				gameData.lang = req.body.lang || "en";
-				let picId = null;
-				if (gameData.picture) {
-					picId = gameData.picture.match(/pic(\d+)\./)[1];
-				}
-
-				fetchPicture(picId)
-					.then((pictureUrl) => {
-						gameData.picture = pictureUrl;
-
-						if (req.body.lang && req.body.lang !== "en") {
-							fetchLang(req.body.gameId, req.body.lang)
-								.then((data) => {
-									Object.assign(gameData, data);
-								})
-								.catch((err) => {
-									console.error(err); // eslint-disable-line no-console
-								})
-								.finally(() => {
-									registerGame({
-										gameData,
-										location: req.body.location,
-										currentUserId: req.user.id,
-										res
-									});
-								});
-							return;
-						}
-
+				data.lang = version.lang || "en";
+				fetchVersion(version.id)
+					.then((versionData) => {
+						let gameData = Object.assign({}, data, versionData);
 						registerGame({
 							gameData,
-							location: req.body.location,
+							location,
 							currentUserId: req.user.id,
 							res
 						});
@@ -257,6 +210,56 @@ router.route("/random")
 			req.session.lastRandom = id;
 			res.status(200).send(JSON.stringify({ id }));
 		}));
+
+router.route("/versions/:gameId/:lang")
+	.get((req, res) => {
+		let { lang, gameId } = req.params;
+		fetch(`https://www.boardgamegeek.com/xmlapi/boardgame/${gameId}?stats=1`)
+			.then((body) => body.text())
+			.then((body) => {
+				let data = xml2json.toJson(body, { object: true });
+				let versions = data.boardgames.boardgame.boardgameversion;
+				let defaultPicture = data.boardgames.boardgame.thumbnail;
+
+				if (!versions) {
+					return [
+						{
+							name: "Only version",
+							id: gameId,
+							picture: data.boardgames.boardgame.thumbnail,
+							lang
+						}
+					];
+				}
+
+				if (versions.constructor !== Array) {
+					versions = [versions];
+				}
+
+				let candidates = versions.filter((each) => each.$t.match(versionsConvert[lang]));
+
+				let promises = candidates.map((candidate) => fetch(`https://boardgamegeek.com/boardgameversion/${candidate.objectid}`)
+					.then((html) => html.text())
+					.then((html) => {
+						let root = parse(html);
+						let img = root.querySelector(".mt5 a img");
+
+						return {
+							name: candidate.$t,
+							id: candidate.objectid,
+							picture: img ? img.getAttribute("src") : defaultPicture,
+							lang
+						};
+					}));
+
+				return Promise.all(promises);
+			})
+			.then((candidates) => {
+				res
+					.status(200)
+					.send(JSON.stringify(candidates));
+			});
+	});
 
 router.route("/:gameId")
 	.get((req, res) => findGame(req.params.gameId, req.user.id, res))
@@ -305,4 +308,3 @@ router.route("/:gameId/like")
 	});
 
 module.exports = router;
-module.exports.fetchLang = fetchLang;

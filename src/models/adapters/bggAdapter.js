@@ -1,23 +1,5 @@
 const types = require("../types");
 
-function findName(itemName, type, search) {
-	if (itemName.value) {
-		return itemName.value;
-	}
-
-	let found = itemName.find((each) => each.type === type && each.value === search);
-
-	if (found) {
-		return found.value;
-	}
-
-	if (type !== "primary") {
-		return findName(itemName, "primary", search);
-	}
-
-	return null;
-}
-
 const itemTypes = {
 	boardgame: types.game,
 	boardgameexpansion: types.expansion
@@ -41,7 +23,7 @@ function computeComplexity(item) {
  * @class
  */
 module.exports = class BggAdapter {
-	static import(data, type, search) {
+	static import(data) {
 		if (!data || !data.items || !data.items.item) {
 			return null;
 		}
@@ -51,7 +33,7 @@ module.exports = class BggAdapter {
 		let result = {
 			foreignId: item.id,
 			link: `https://www.boardgamegeek.com/boardgame/${item.id}`,
-			name: findName(item.name, type, search),
+			name: item.name,
 			description: item.description,
 			minPlayers: item.minplayers.value,
 			maxPlayers: item.maxplayers.value,
