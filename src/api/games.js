@@ -11,8 +11,8 @@ const router = new Router();
 const xml2json = require("xml2json");
 
 const versionsConvert = {
-	en: /english/i,
-	fr: /french/i
+	en: /multilingual|english/i,
+	fr: /multilingual|french/i
 };
 
 const descriptionEmpty = "This page does not exist. You can edit this page to create it.";
@@ -237,6 +237,17 @@ router.route("/versions/:gameId/:lang")
 				}
 
 				let candidates = versions.filter((each) => each.$t.match(versionsConvert[lang]));
+
+				if (!candidates.length) {
+					return [
+						{
+							name: "Only version",
+							id: gameId,
+							picture: data.boardgames.boardgame.thumbnail,
+							lang
+						}
+					];
+				}
 
 				let promises = candidates.map((candidate) => fetch(`https://boardgamegeek.com/boardgameversion/${candidate.objectid}`)
 					.then((html) => html.text())
