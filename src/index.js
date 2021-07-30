@@ -7,7 +7,6 @@ const compression = require("compression");
 const express = require("express");
 const helmet = require("helmet");
 const http = require("http");
-const http2 = require("http2");
 const https = require("https");
 const fs = require("fs");
 const morgan = require("morgan");
@@ -45,6 +44,7 @@ if (app.get("env") === "production") {
 
 app.use(session(currentSession));
 
+app.use("/.well-known/acme-challenge", express.static("./.well-known/acme-challenge"));
 app.use(redirectToHTTPS([
 	/127.0.0.1/,
 	/localhost:(\d{4})/
@@ -85,8 +85,8 @@ if (process.env.USE_SSL && process.env.KEY && process.env.CERT) { // eslint-disa
 		console.log("\nSecured server ready on port %d\n", indexHTTPS.address().port); // eslint-disable-line no-console
 	});
 
-	let index = http2.createSecureServer(options, app).listen(config.server.port, () => {
-		console.log("\nSecured HTTP2 server ready on port %d\n", index.address().port); // eslint-disable-line no-console
+	let index = http.createServer(app).listen(config.server.port, () => { // eslint-disable-line no-process-env
+		console.log("\nServer ready on port %d\n", index.address().port); // eslint-disable-line no-console
 	});
 } else {
 	let index = http.createServer(app).listen(config.server.port, () => { // eslint-disable-line no-process-env
