@@ -1,4 +1,5 @@
 const low = require("lowdb");
+const { join } = require("path");
 const FileSync = require("lowdb/adapters/FileAsync");
 const lodashId = require("lodash-id");
 
@@ -14,7 +15,8 @@ const identity = (each) => Promise.resolve(each);
  * @return {object} db and functions to export
  */
 module.exports = function dbBuilder(path, initialValues, { normalize = identity } = {}) {
-	const adapter = new FileSync(`./db/${path}.json`);
+	let filePath = join(__dirname, "..", "..", "db", `${path}.json`);
+	const adapter = new FileSync(filePath);
 	let db = low(adapter).then((database) => {
 		database._.mixin(lodashId);
 		return database.get(path);

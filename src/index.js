@@ -61,9 +61,9 @@ app.use("/api/", jwt());
 app.use("/api/v1", routes);
 app.use("/api/v1", handleErrors);
 
-app.use(express.static("public"));
+app.use(express.static(path.join(__dirname, "..", "public")));
 app.use("/*", (req, res) => {
-	res.sendFile(path.join(`${__dirname}/../public/index.html`));
+	res.sendFile(path.join(__dirname, "..", "public", "index.html"));
 });
 
 app.get("/", (req, res) => {
@@ -84,12 +84,8 @@ if (process.env.USE_SSL && process.env.KEY && process.env.CERT) { // eslint-disa
 	let indexHTTPS = https.createServer(options, app).listen(config.server.sslPort, () => {
 		console.log("\nSecured server ready on port %d\n", indexHTTPS.address().port); // eslint-disable-line no-console
 	});
-
-	let index = http.createServer(app).listen(config.server.port, () => { // eslint-disable-line no-process-env
-		console.log("\nServer ready on port %d\n", index.address().port); // eslint-disable-line no-console
-	});
-} else {
-	let index = http.createServer(app).listen(config.server.port, () => { // eslint-disable-line no-process-env
-		console.log("\nServer ready on port %d\n", index.address().port); // eslint-disable-line no-console
-	});
 }
+
+let index = http.createServer(app).listen(config.server.port, () => { // eslint-disable-line no-process-env
+	console.log("\nServer ready on port %d\n", index.address().port); // eslint-disable-line no-console
+});

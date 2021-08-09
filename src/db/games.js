@@ -1,4 +1,5 @@
 /* eslint {"max-lines": [2, 500]} */
+const { join } = require("path");
 const users = require("./users");
 const publishersDB = require("./publishers");
 const categoriesDB = require("./categories");
@@ -7,7 +8,8 @@ const locations = require("./locations");
 
 const low = require("lowdb");
 const FileSync = require("lowdb/adapters/FileAsync");
-const adapter = new FileSync("./db/games.json");
+const filePath = join(__dirname, "..", "..", "db", "games.json");
+const adapter = new FileSync(filePath);
 const lodashId = require("lodash-id");
 const types = require("../models/types");
 const { expansion } = require("../models/types");
