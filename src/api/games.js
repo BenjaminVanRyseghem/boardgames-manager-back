@@ -73,7 +73,11 @@ function fetchPicture(imageId) {
 		});
 }
 
-function fetchVersion(versionId) {
+function fetchVersion(version) {
+	let { id: versionId } = version;
+	if (!versionId) {
+		return Promise.resolve(version);
+	}
 	return new Promise((resolve, reject) => fetch(`https://boardgamegeek.com/boardgameversion/${versionId}`)
 		.then((body) => body.text())
 		.then((body) => { // eslint-disable-line max-statements
@@ -107,7 +111,7 @@ function fetchVersion(versionId) {
 			}
 
 			let match = img.getAttribute("href").match(/\/image\/(\d+).*/);
-			let [_, imageId] = match;
+			let [, imageId] = match;
 
 			fetchPicture(imageId)
 				.then((pictureUrl) => {
@@ -160,7 +164,7 @@ router.route("/")
 				let data = BggAdapter.import(xml2json.toJson(body, { object: true }));
 
 				data.lang = version.lang || "en";
-				fetchVersion(version.id)
+				fetchVersion(version)
 					.then((versionData) => {
 						let gameData = Object.assign({}, data, versionData);
 						registerGame({
@@ -224,8 +228,6 @@ router.route("/versions/:gameId/:lang")
 				if (!versions) {
 					return [
 						{
-							name: "Only version",
-							id: gameId,
 							picture: data.boardgames.boardgame.thumbnail,
 							lang
 						}
@@ -241,8 +243,6 @@ router.route("/versions/:gameId/:lang")
 				if (!candidates.length) {
 					return [
 						{
-							name: "Only version",
-							id: gameId,
 							picture: data.boardgames.boardgame.thumbnail,
 							lang
 						}
