@@ -1,0 +1,11 @@
+{
+  "verbose": true,
+  "ignore": [
+    "categories.json",
+    "games.json",
+    "locations.json",
+    "mechanics.json",
+    "publishers.json",
+    "users.json"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+	"presets": [
+		"env",
+		"react"
+	],
+	"plugins": [
+		"rewire-test-env-only",
+		"wildcard"
+	]
+}
